@@ -7,11 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
 import { Image, Video } from 'lucide-react';
 
-export const metadata = {
-  title: "Gym Photos & Videos",
-  description:
-    "View photos and videos of As FitnessZone, a modern unisex gym in Bolpur.",
-};
+
 
 export default function GalleryPage() {
     const [activeTab, setActiveTab] = useState('all');
