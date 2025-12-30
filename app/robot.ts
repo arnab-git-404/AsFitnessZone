@@ -9,6 +9,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin", "/admin/*", "/api/*"],
       },
     ],
-    sitemap: "/sitemap.xml",
+    sitemap: "https://asfitnesszone.vercel.app/sitemap.xml",
   };
 }
