@@ -266,7 +266,7 @@ export default function Hero() {
           >
             <Image
               src={image}
-              alt={`Gym hero image ${index + 1}`}
+              alt='As FitnessZone Gym'
               fill
               priority={index === 0}
               quality={90}

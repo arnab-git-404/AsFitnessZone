@@ -4,6 +4,8 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "next-themes";
 import Script from "next/script";
+import { Analytics } from "@vercel/analytics/next"
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -54,7 +56,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${inter.variable} font-sans antialiased`}>
-        {/* ✅ Local Business / Gym Schema */}
+        {/* Local Business / Gym Schema */}
         <Script
           id="as-fitnesszone-gym-schema"
           type="application/ld+json"
@@ -64,7 +66,7 @@ export default function RootLayout({
               "@context": "https://schema.org",
               "@type": "Gym",
               name: "As FitnessZone",
-              url: "https://asfitnesszone.com",
+              url: "https://asfitnesszone.vercel.app",
               address: {
                 "@type": "PostalAddress",
                 addressLocality: "Bolpur",
@@ -82,7 +84,7 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           {children}
         </ThemeProvider>
-
+          <Analytics />
         <Toaster />
       </body>
     </html>
