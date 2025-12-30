@@ -21,7 +21,7 @@ export const metadata: Metadata = {
     "fitness gym bolpur",
     "best fitness center in bolpur",
   ],
-  metadataBase: new URL("https://asfitnesszone.com"),
+  metadataBase: new URL("https://asfitnesszone.vercel.app"),
   alternates: {
     canonical: "/",
   },
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     title: "Best Unisex Gym in Bolpur | As FitnessZone",
     description:
       "Join As FitnessZone – a modern unisex gym in Bolpur with certified trainers and personalized fitness programs.",
-    url: "https://asfitnesszone.com",
+    url: "https://asfitnesszone.vercel.app",
     siteName: "As FitnessZone",
     locale: "en_IN",
     type: "website",
