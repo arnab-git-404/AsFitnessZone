@@ -1,5 +1,6 @@
 import Hero from "@/components/home/Hero";
 import Why from "@/components/home/Why";
+import Stats from "@/components/home/Stats";
 import Testimonials from "@/components/home/Testimonials";
 import CTA from "@/components/home/CTA";
 
@@ -11,6 +12,7 @@ export default function HomePage() {
       <main>
         <Hero />
         <Why />
+        <Stats />
         <Testimonials />
         <CTA />
       </main>

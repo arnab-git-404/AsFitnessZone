@@ -1,75 +1,53 @@
-import Price from "@/components/membership/Price";
-import FAQ from "@/components/membership/FAQ";
-import { Check } from "lucide-react";
+'use client';
 
-export const dynamic = "force-static";
-
-
-export const metadata = {
-  title: "Gym Membership Plans in Bolpur",
-  description:
-    "Affordable gym membership plans at As FitnessZone – best unisex gym in Bolpur.",
-};
-
-
+import { useEffect } from 'react';
+import Price from '@/components/membership/Price';
+import FAQ from '@/components/membership/FAQ';
+import { Sparkles } from 'lucide-react';
+import { motion } from 'framer-motion';
+import Reveal from '@/components/ui/Reveal';
+import DecorativeOrbs from '@/components/ui/DecorativeOrbs';
 
 export default function MembershipPage() {
-  return (
-    <div className="min-h-screen flex flex-col">
-      <main className="flex-1">
-        {/* Hero Section */}
-        <section className="py-20 bg-gradient-to-br from-background via-background to-primary/10">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center space-y-6">
-              <h1 className="text-4xl md:text-5xl font-bold">
-                Choose Your <span className="text-primary">Membership</span>
-              </h1>
-              <p className="text-xl text-muted-foreground">
-                Flexible plans designed to fit your lifestyle and budget
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Pricing Cards */}
-        <Price />
-
-        {/* Features Comparison */}
-        {/* <section className="py-20 bg-card">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto space-y-8">
-              <div className="text-center space-y-4">
-                <h2 className="text-3xl md:text-4xl font-bold">
-                  All Plans <span className="text-primary">Include</span>
-                </h2>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {[
-                  "State-of-the-art equipment",
-                  "Clean locker rooms & showers",
-                  "Free parking",
-                  "Climate-controlled facility",
-                  "Professional staff support",
-                  "Progress tracking tools",
-                  "Member mobile app",
-                  "Community events",
-                ].map((feature, index) => (
-                  <div key={index} className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Check className="h-4 w-4 text-primary" />
+    useEffect(() => {
+        document.title = 'Gym Membership Plans in Bolpur | As FitnessZone';
+    }, []);
+    return (
+        <div className="min-h-screen flex flex-col">
+            <main className="flex-1">
+                {/* Hero Section */}
+                <section className="relative py-28 overflow-hidden bg-gradient-to-br from-background via-background to-primary/10">
+                    <DecorativeOrbs count={3} />
+                    <div className="container mx-auto px-4 relative z-10">
+                        <Reveal>
+                            <div className="max-w-3xl mx-auto text-center space-y-6">
+                                <motion.div
+                                    className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm px-4 py-2"
+                                    whileHover={{ scale: 1.05 }}
+                                >
+                                    <Sparkles className="h-4 w-4 text-primary" />
+                                    <span className="text-sm font-medium text-primary">Flexible Plans</span>
+                                </motion.div>
+                                <h1 className="text-5xl md:text-7xl font-bold leading-tight">
+                                    Choose Your{' '}
+                                    <span className="bg-gradient-to-r from-red-500 to-orange-500 bg-clip-text text-transparent">
+                                        Membership
+                                    </span>
+                                </h1>
+                                <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+                                    Flexible plans designed to fit your lifestyle and budget
+                                </p>
+                            </div>
+                        </Reveal>
                     </div>
-                    <span>{feature}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section> */}
+                </section>
 
-        {/* FAQ Section */}
-        <FAQ />
-      </main>
-    </div>
-  );
+                {/* Pricing Cards */}
+                <Price />
+
+                {/* FAQ Section */}
+                <FAQ />
+            </main>
+        </div>
+    );
 }
