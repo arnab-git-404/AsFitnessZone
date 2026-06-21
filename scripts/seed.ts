@@ -23,9 +23,9 @@ if (!MONGODB_URI) {
     process.exit(1);
 }
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin@asfitnesszone.com';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'Admin@123';
-const ADMIN_NAME = process.env.ADMIN_NAME || 'Admin';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const ADMIN_NAME = process.env.ADMIN_NAME;
 
 async function seed() {
     try {
