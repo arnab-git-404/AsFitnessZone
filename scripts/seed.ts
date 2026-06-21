@@ -19,7 +19,6 @@ const MONGODB_URI = process.env.MONGODB_URI || '';
 if (!MONGODB_URI) {
     console.error('❌ MONGODB_URI environment variable is not set.');
     console.error('   Create a .env.local file with:');
-    console.error('   MONGODB_URI=mongodb://localhost:27017/fitnessgym');
     process.exit(1);
 }
 
@@ -97,7 +96,7 @@ async function seed() {
         }
 
         // Check if admin already exists
-        const existingUser = await UserModel.findOne({ email: ADMIN_EMAIL.toLowerCase() });
+        const existingUser = await UserModel.findOne({ email: (ADMIN_EMAIL as string).toLowerCase() });
         if (existingUser) {
             const existingCustomer = await CustomerModel.findOne({ userId: existingUser._id });
             const adminRole = await RoleModel.findById(existingUser.role);
@@ -113,11 +112,11 @@ async function seed() {
 
         // Create User (auth record)
         const salt = await bcrypt.genSalt(10);
-        const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD, salt);
+        const hashedPassword = await bcrypt.hash(ADMIN_PASSWORD  as string, salt);
 
         const adminRoleId = createdRoles['admin'];
         const user = await UserModel.create({
-            email: ADMIN_EMAIL.toLowerCase(),
+            email: (ADMIN_EMAIL as string).toLowerCase(),
             password: hashedPassword,
             userType: 'admin',
             role: new mongoose.Types.ObjectId(adminRoleId),
@@ -126,7 +125,7 @@ async function seed() {
         // Create Customer (profile record)
         const customer = await CustomerModel.create({
             userId: user._id,
-            name: ADMIN_NAME,
+            name: (ADMIN_NAME as string).trim(),
         });
 
         console.log(`\n✅ Admin created successfully!`);
