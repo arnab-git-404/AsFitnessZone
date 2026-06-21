@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { generateUploadSignature } from '@/lib/cloudinary/cloudinary';
 import { getUserFromRequest } from '@/lib/auth/auth';
 import { uploadSignatureSchema, getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
 
@@ -36,4 +37,6 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+};
+
+export const POST = withActivityLog('generate_upload_signature', _POST);

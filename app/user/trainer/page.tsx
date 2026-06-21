@@ -16,6 +16,7 @@ const feeTypeLabels: Record<string, string> = {
     quarterly: 'Quarterly',
     sixMonths: '6 Months',
     annual: 'Annual',
+    
 };
 
 export default function UserTrainerPage() {
@@ -29,6 +30,7 @@ export default function UserTrainerPage() {
     const [isAssigning, setIsAssigning] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
 
+    
     const fetchData = async () => {
         try {
             const [assignmentRes, trainersRes] = await Promise.all([

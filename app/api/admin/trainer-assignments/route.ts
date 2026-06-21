@@ -6,8 +6,9 @@ import Customer from '@/lib/db/models/customer.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
 import { assignTrainerSchema, updateAssignmentSchema } from '@/lib/validations';
 import { getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -34,9 +35,11 @@ export async function GET(request: NextRequest) {
         console.error('Get assignments error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function POST(request: NextRequest) {
+export const GET = withActivityLog('view_trainer_assignments', _GET);
+
+const _POST = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -104,4 +107,6 @@ export async function POST(request: NextRequest) {
         console.error('Create assignment error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const POST = withActivityLog('create_trainer_assignment', _POST);

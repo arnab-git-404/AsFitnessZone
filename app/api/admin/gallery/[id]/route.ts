@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Media from '@/lib/db/models/media.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 import { deleteFromCloudinary } from '@/lib/cloudinary/cloudinary';
 
-export async function GET(
+const _GET = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -27,12 +28,14 @@ export async function GET(
         console.error('Get media error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function PUT(
+export const GET = withActivityLog('view_gallery_item', _GET);
+
+const _PUT = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -54,12 +57,14 @@ export async function PUT(
         console.error('Update media error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function DELETE(
+export const PUT = withActivityLog('update_gallery_item', _PUT);
+
+const _DELETE = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -89,4 +94,6 @@ export async function DELETE(
         console.error('Delete media error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const DELETE = withActivityLog('delete_gallery_item', _DELETE);

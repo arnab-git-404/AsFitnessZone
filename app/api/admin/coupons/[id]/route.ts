@@ -2,11 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Coupon from '@/lib/db/models/coupon.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(
+const _GET = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user || !isAdmin(user)) {
@@ -26,12 +27,14 @@ export async function GET(
         console.error('Get coupon error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function PUT(
+export const GET = withActivityLog('view_coupon', _GET);
+
+const _PUT = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user || !isAdmin(user)) {
@@ -70,12 +73,14 @@ export async function PUT(
         console.error('Update coupon error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function DELETE(
+export const PUT = withActivityLog('update_coupon', _PUT);
+
+const _DELETE = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user || !isAdmin(user)) {
@@ -95,4 +100,6 @@ export async function DELETE(
         console.error('Delete coupon error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const DELETE = withActivityLog('delete_coupon', _DELETE);

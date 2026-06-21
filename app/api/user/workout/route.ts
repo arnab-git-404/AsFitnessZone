@@ -3,8 +3,9 @@ import connectDB from '@/lib/db/db';
 import Workout from '@/lib/db/models/workout.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
 import { createWorkoutSchema, getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user) {
@@ -42,9 +43,11 @@ export async function POST(request: NextRequest) {
         console.error('Log workout error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function GET(request: NextRequest) {
+export const POST = withActivityLog('create_workout', _POST);
+
+const _GET = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user) {
@@ -65,4 +68,6 @@ export async function GET(request: NextRequest) {
         console.error('Get workouts error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const GET = withActivityLog('view_workouts', _GET);

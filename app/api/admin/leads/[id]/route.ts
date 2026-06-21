@@ -2,12 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Lead from '@/lib/db/models/lead.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 import { updateLeadStatusSchema, getFirstZodError } from '@/lib/validations';
 
-export async function PATCH(
+const _PATCH = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
 
@@ -54,4 +55,6 @@ export async function PATCH(
             { status: 500 }
         );
     }
-}
+};
+
+export const PATCH = withActivityLog('update_lead_status', _PATCH);

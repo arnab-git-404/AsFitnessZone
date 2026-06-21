@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import CheckIn from '@/lib/db/models/checkin.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload) {
@@ -38,9 +39,11 @@ export async function POST(request: NextRequest) {
         console.error('Check-in error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function GET(request: NextRequest) {
+export const POST = withActivityLog('create_checkin', _POST);
+
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload) {
@@ -97,4 +100,6 @@ export async function GET(request: NextRequest) {
         console.error('Get check-ins error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const GET = withActivityLog('view_checkins', _GET);

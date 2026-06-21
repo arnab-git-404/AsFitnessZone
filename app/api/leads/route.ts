@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Lead from '@/lib/db/models/lead.model';
 import { createLeadSchema, getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         await connectDB();
 
@@ -46,4 +47,6 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+};
+
+export const POST = withActivityLog('create_lead', _POST);

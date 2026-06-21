@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyAccessToken, verifyRefreshToken, generateAccessToken, generateRefreshToken, setAuthCookies } from './lib/auth/auth';
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
     const { pathname } = request.nextUrl;
 
     // Routes that don't require middleware processing

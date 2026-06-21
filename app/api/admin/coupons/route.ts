@@ -2,9 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Coupon from '@/lib/db/models/coupon.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 import { createCouponSchema, getFirstZodError } from '@/lib/validations';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user || !isAdmin(user)) {
@@ -19,9 +20,11 @@ export async function GET(request: NextRequest) {
         console.error('Get coupons error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function POST(request: NextRequest) {
+export const GET = withActivityLog('view_coupons', _GET);
+
+const _POST = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user || !isAdmin(user)) {
@@ -64,4 +67,6 @@ export async function POST(request: NextRequest) {
         console.error('Create coupon error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const POST = withActivityLog('create_coupon', _POST);

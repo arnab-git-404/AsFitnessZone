@@ -4,8 +4,9 @@ import User from '@/lib/db/models/user.model';
 import Customer from '@/lib/db/models/customer.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
 import { updateProfileSchema, getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
 
@@ -41,9 +42,11 @@ export async function GET(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+};
 
-export async function PUT(request: NextRequest) {
+export const GET = withActivityLog('view_profile', _GET);
+
+const _PUT = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
 
@@ -108,4 +111,6 @@ export async function PUT(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+};
+
+export const PUT = withActivityLog('update_profile', _PUT);

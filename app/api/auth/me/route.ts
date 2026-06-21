@@ -4,8 +4,9 @@ import User from '@/lib/db/models/user.model';
 import Customer from '@/lib/db/models/customer.model';
 import Trainer from '@/lib/db/models/trainer.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
 
@@ -49,4 +50,6 @@ export async function GET(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+};
+
+export const GET = withActivityLog('view_profile', _GET);

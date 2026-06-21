@@ -3,8 +3,9 @@ import connectDB from '@/lib/db/db';
 import Measurement from '@/lib/db/models/measurement.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
 import { createMeasurementSchema, getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user) {
@@ -46,9 +47,11 @@ export async function POST(request: NextRequest) {
         console.error('Save measurement error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function GET(request: NextRequest) {
+export const POST = withActivityLog('create_measurement', _POST);
+
+const _GET = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user) {
@@ -69,4 +72,6 @@ export async function GET(request: NextRequest) {
         console.error('Get measurements error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const GET = withActivityLog('view_measurements', _GET);

@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Media from '@/lib/db/models/media.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -18,9 +19,11 @@ export async function GET(request: NextRequest) {
         console.error('Get media error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function POST(request: NextRequest) {
+export const GET = withActivityLog('view_gallery', _GET);
+
+const _POST = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -51,4 +54,6 @@ export async function POST(request: NextRequest) {
         console.error('Create media error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const POST = withActivityLog('create_gallery_item', _POST);

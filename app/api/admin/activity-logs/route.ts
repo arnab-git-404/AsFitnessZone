@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import ActivityLog from '@/lib/db/models/activityLog.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -67,4 +68,6 @@ export async function GET(request: NextRequest) {
         console.error('Get activity logs error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const GET = withActivityLog('view_activity_logs', _GET);

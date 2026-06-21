@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Coupon from '@/lib/db/models/coupon.model';
 import { applyCouponSchema, getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         const body = await request.json();
         const result = applyCouponSchema.safeParse(body);
@@ -70,4 +71,6 @@ export async function POST(request: NextRequest) {
         console.error('Validate coupon error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const POST = withActivityLog('validate_coupon', _POST);

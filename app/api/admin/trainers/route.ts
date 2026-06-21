@@ -7,8 +7,9 @@ import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
 import { createTrainerSchema } from '@/lib/validations';
 import { getFirstZodError } from '@/lib/validations';
 import bcrypt from 'bcryptjs';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -35,9 +36,11 @@ export async function GET(request: NextRequest) {
         console.error('Get trainers error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function POST(request: NextRequest) {
+export const GET = withActivityLog('view_trainers', _GET);
+
+const _POST = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -112,4 +115,6 @@ export async function POST(request: NextRequest) {
         console.error('Create trainer error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const POST = withActivityLog('create_trainer', _POST);

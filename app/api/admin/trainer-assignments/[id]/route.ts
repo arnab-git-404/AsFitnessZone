@@ -2,13 +2,14 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import TrainerAssignment from '@/lib/db/models/trainerAssignment.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 import { updateAssignmentSchema } from '@/lib/validations';
 import { getFirstZodError } from '@/lib/validations';
 
-export async function PUT(
+const _PUT = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -42,12 +43,14 @@ export async function PUT(
         console.error('Update assignment error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function DELETE(
+export const PUT = withActivityLog('update_trainer_assignment', _PUT);
+
+const _DELETE = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -67,4 +70,6 @@ export async function DELETE(
         console.error('Delete assignment error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const DELETE = withActivityLog('delete_trainer_assignment', _DELETE);

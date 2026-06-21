@@ -5,8 +5,9 @@ import TrainerAssignment from '@/lib/db/models/trainerAssignment.model';
 import Customer from '@/lib/db/models/customer.model';
 import User from '@/lib/db/models/user.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload) {
@@ -78,4 +79,6 @@ export async function GET(request: NextRequest) {
         console.error('Trainer assignments error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const GET = withActivityLog('view_trainer_dashboard', _GET);

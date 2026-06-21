@@ -3,8 +3,9 @@ import connectDB from '@/lib/db/db';
 import CheckIn from '@/lib/db/models/checkin.model';
 import Customer from '@/lib/db/models/customer.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -68,4 +69,6 @@ export async function GET(request: NextRequest) {
         console.error('Get admin check-ins error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const GET = withActivityLog('view_checkins', _GET);

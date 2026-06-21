@@ -3,8 +3,9 @@ import connectDB from '@/lib/db/db';
 import WaterLog from '@/lib/db/models/waterLog.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
 import { updateWaterSchema, getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user) {
@@ -34,9 +35,11 @@ export async function POST(request: NextRequest) {
         console.error('Update water error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function GET(request: NextRequest) {
+export const POST = withActivityLog('update_water_intake', _POST);
+
+const _GET = async (request: NextRequest) => {
     try {
         const user = await getUserFromRequest(request);
         if (!user) {
@@ -84,4 +87,6 @@ export async function GET(request: NextRequest) {
         console.error('Get water error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const GET = withActivityLog('view_water_intake', _GET);

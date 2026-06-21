@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Lead from '@/lib/db/models/lead.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
 
@@ -26,4 +27,6 @@ export async function GET(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+};
+
+export const GET = withActivityLog('view_leads', _GET);

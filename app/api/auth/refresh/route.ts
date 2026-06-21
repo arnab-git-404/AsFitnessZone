@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { verifyRefreshToken, generateAccessToken, generateRefreshToken, setAuthCookies } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         const refreshToken = request.cookies.get('refreshToken')?.value;
 
@@ -41,4 +42,6 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+};
+
+export const POST = withActivityLog('refresh_tokens', _POST);

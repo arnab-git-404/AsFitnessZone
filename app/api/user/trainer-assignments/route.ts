@@ -3,8 +3,9 @@ import connectDB from '@/lib/db/db';
 import TrainerAssignment from '@/lib/db/models/trainerAssignment.model';
 import Trainer from '@/lib/db/models/trainer.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(request: NextRequest) {
+const _GET = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload) {
@@ -26,9 +27,11 @@ export async function GET(request: NextRequest) {
         console.error('Get user assignment error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function POST(request: NextRequest) {
+export const GET = withActivityLog('view_user_assignment', _GET);
+
+const _POST = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload) {
@@ -104,9 +107,11 @@ export async function POST(request: NextRequest) {
         console.error('Create user assignment error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function PUT(request: NextRequest) {
+export const POST = withActivityLog('create_user_assignment', _POST);
+
+const _PUT = async (request: NextRequest) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload) {
@@ -131,4 +136,6 @@ export async function PUT(request: NextRequest) {
         console.error('Cancel assignment error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const PUT = withActivityLog('cancel_user_assignment', _PUT);

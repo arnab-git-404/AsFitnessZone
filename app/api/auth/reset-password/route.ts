@@ -4,8 +4,9 @@ import User from '@/lib/db/models/user.model';
 import ResetToken from '@/lib/db/models/resetToken.model';
 import { hashPassword } from '@/lib/auth/auth';
 import { resetPasswordSchema, getFirstZodError } from '@/lib/validations';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function POST(request: NextRequest) {
+const _POST = async (request: NextRequest) => {
     try {
         const body = await request.json();
         const result = resetPasswordSchema.safeParse(body);
@@ -63,4 +64,6 @@ export async function POST(request: NextRequest) {
             { status: 500 }
         );
     }
-}
+};
+
+export const POST = withActivityLog('reset_password', _POST);

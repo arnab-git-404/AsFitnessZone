@@ -4,11 +4,12 @@ import Trainer from '@/lib/db/models/trainer.model';
 import User from '@/lib/db/models/user.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
 import bcrypt from 'bcryptjs';
+import { withActivityLog } from '@/lib/activityLogger';
 
-export async function GET(
+const _GET = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -35,12 +36,14 @@ export async function GET(
         console.error('Get trainer error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function PUT(
+export const GET = withActivityLog('view_trainer', _GET);
+
+const _PUT = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -94,12 +97,14 @@ export async function PUT(
         console.error('Update trainer error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
 
-export async function DELETE(
+export const PUT = withActivityLog('update_trainer', _PUT);
+
+const _DELETE = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
-) {
+) => {
     try {
         const tokenPayload = await getUserFromRequest(request);
         if (!tokenPayload || !isAdmin(tokenPayload)) {
@@ -119,4 +124,6 @@ export async function DELETE(
         console.error('Delete trainer error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-}
+};
+
+export const DELETE = withActivityLog('delete_trainer', _DELETE);
