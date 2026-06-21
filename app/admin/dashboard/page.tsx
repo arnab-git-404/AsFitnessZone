@@ -7,11 +7,12 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dumbbell, Users, MessageSquare, Image as ImageIcon, LogOut, LayoutDashboard, UserCog } from 'lucide-react';
 import { toast } from 'sonner';
+import type { UserResponse, AdminStats } from '@/lib/types';
 
 export default function AdminDashboard() {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
-    const [stats, setStats] = useState({
+    const [user, setUser] = useState<UserResponse | null>(null);
+    const [stats, setStats] = useState<AdminStats>({
         totalUsers: 0,
         totalLeads: 0,
         totalPrograms: 0,

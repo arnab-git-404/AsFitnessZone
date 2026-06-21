@@ -1,21 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Lead from '@/lib/db/models/lead.model';
+import { createLeadSchema, getFirstZodError } from '@/lib/validations';
 
 export async function POST(request: NextRequest) {
     try {
         await connectDB();
 
         const body = await request.json();
-        const { name, email, phone, message } = body;
+        const result = createLeadSchema.safeParse(body);
 
-        // Validation
-        if (!name || !email || !message) {
+        if (!result.success) {
             return NextResponse.json(
-                { error: 'Name, email, and message are required' },
+                { error: getFirstZodError(result) },
                 { status: 400 }
             );
         }
+
+        const { name, email, phone, message } = result.data;
 
         // Create lead
         const lead = await Lead.create({

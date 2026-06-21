@@ -10,11 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dumbbell, MessageSquare, LogOut, LayoutDashboard, Users } from 'lucide-react';
 import { toast } from 'sonner';
+import type { UserResponse, LeadResponse } from '@/lib/types';
 
 export default function AdminLeads() {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
-    const [leads, setLeads] = useState<any[]>([]);
+    const [user, setUser] = useState<UserResponse | null>(null);
+    const [leads, setLeads] = useState<LeadResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

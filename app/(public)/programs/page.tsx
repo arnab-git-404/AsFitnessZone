@@ -1,5 +1,3 @@
-import Header from '@/components/public/Navbar';
-import Footer from '@/components/public/Footer';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import User from '@/lib/db/models/user.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
+import { updateProfileSchema, getFirstZodError } from '@/lib/validations';
 
 export async function GET(request: NextRequest) {
     try {
@@ -48,7 +49,16 @@ export async function PUT(request: NextRequest) {
         await connectDB();
 
         const body = await request.json();
-        const { name, phone, age, address, weight, height, fitnessGoal, profileImage } = body;
+        const result = updateProfileSchema.safeParse(body);
+
+        if (!result.success) {
+            return NextResponse.json(
+                { error: getFirstZodError(result) },
+                { status: 400 }
+            );
+        }
+
+        const { name, phone, age, address, weight, height, fitnessGoal, profileImage } = result.data;
 
         // Update user
         const user = await User.findByIdAndUpdate(

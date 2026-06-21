@@ -2,21 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import User from '@/lib/db/models/user.model';
 import { comparePassword, generateToken } from '@/lib/auth/auth';
+import { loginSchema, getFirstZodError } from '@/lib/validations';
 
 export async function POST(request: NextRequest) {
     try {
         await connectDB();
 
         const body = await request.json();
-        const { email, password } = body;
+        const result = loginSchema.safeParse(body);
 
-        // Validation
-        if (!email || !password) {
+        if (!result.success) {
             return NextResponse.json(
-                { error: 'Email and password are required' },
+                { error: getFirstZodError(result) },
                 { status: 400 }
             );
         }
+
+        const { email, password } = result.data;
 
         // Find user
         const user = await User.findOne({ email: email.toLowerCase() });

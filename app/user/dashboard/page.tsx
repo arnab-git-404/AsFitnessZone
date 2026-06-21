@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Dumbbell, User, LogOut, Target, TrendingUp } from 'lucide-react';
 import { toast } from 'sonner';
+import type { UserResponse } from '@/lib/types';
 
 export default function UserDashboard() {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<UserResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {

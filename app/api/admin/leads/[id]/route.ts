@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import Lead from '@/lib/db/models/lead.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
+import { updateLeadStatusSchema, getFirstZodError } from '@/lib/validations';
 
 export async function PATCH(
     request: NextRequest,
@@ -21,7 +22,16 @@ export async function PATCH(
 
         const { id } = await params;
         const body = await request.json();
-        const { status } = body;
+        const result = updateLeadStatusSchema.safeParse(body);
+
+        if (!result.success) {
+            return NextResponse.json(
+                { error: getFirstZodError(result) },
+                { status: 400 }
+            );
+        }
+
+        const { status } = result.data;
 
         const lead = await Lead.findByIdAndUpdate(
             id,

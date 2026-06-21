@@ -1,7 +1,5 @@
 'use client';
 
-import Header from '@/components/public/Navbar';
-import Footer from '@/components/public/Footer';
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card } from '@/components/ui/card';
@@ -30,7 +28,6 @@ export default function GalleryPage() {
 
     return (
         <div className="min-h-screen flex flex-col">
-
             <main className="flex-1">
                 {/* Hero Section */}
                 <section className="py-20 bg-gradient-to-br from-background via-background to-primary/10">

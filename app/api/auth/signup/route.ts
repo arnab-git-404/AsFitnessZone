@@ -2,28 +2,23 @@ import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import User from '@/lib/db/models/user.model';
 import { hashPassword } from '@/lib/auth/auth';
+import { signupSchema, getFirstZodError } from '@/lib/validations';
 
 export async function POST(request: NextRequest) {
     try {
         await connectDB();
 
         const body = await request.json();
-        const { name, email, password } = body;
+        const result = signupSchema.safeParse(body);
 
-        // Validation
-        if (!name || !email || !password) {
+        if (!result.success) {
             return NextResponse.json(
-                { error: 'All fields are required' },
+                { error: getFirstZodError(result) },
                 { status: 400 }
             );
         }
 
-        if (password.length < 6) {
-            return NextResponse.json(
-                { error: 'Password must be at least 6 characters' },
-                { status: 400 }
-            );
-        }
+        const { name, email, password } = result.data;
 
         // Check if user already exists
         const existingUser = await User.findOne({ email: email.toLowerCase() });

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateUploadSignature } from '@/lib/cloudinary/cloudinary';
 import { getUserFromRequest } from '@/lib/auth/auth';
+import { uploadSignatureSchema, getFirstZodError } from '@/lib/validations';
 
 export async function POST(request: NextRequest) {
     try {
@@ -13,9 +14,19 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        const { folder } = await request.json();
+        const body = await request.json();
+        const result = uploadSignatureSchema.safeParse(body);
 
-        const uploadData = await generateUploadSignature(folder || 'fitnessgym');
+        if (!result.success) {
+            return NextResponse.json(
+                { error: getFirstZodError(result) },
+                { status: 400 }
+            );
+        }
+
+        const folder = result.data.folder || 'fitnessgym';
+
+        const uploadData = await generateUploadSignature(folder);
 
         return NextResponse.json(uploadData, { status: 200 });
     } catch (error: any) {

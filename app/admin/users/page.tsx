@@ -10,11 +10,12 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Badge } from '@/components/ui/badge';
 import { Dumbbell, Users, LogOut, LayoutDashboard, Search, UserPlus } from 'lucide-react';
 import { toast } from 'sonner';
+import type { UserResponse } from '@/lib/types';
 
 export default function AdminUsers() {
     const router = useRouter();
-    const [user, setUser] = useState<any>(null);
-    const [users, setUsers] = useState<any[]>([]);
+    const [user, setUser] = useState<UserResponse | null>(null);
+    const [users, setUsers] = useState<UserResponse[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [isLoading, setIsLoading] = useState(true);
 
