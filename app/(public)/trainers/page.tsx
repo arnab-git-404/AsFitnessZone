@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { Tag } from 'primereact/tag';
 import { Award, IndianRupee, Users, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
@@ -68,13 +68,13 @@ export default function TrainersPage() {
                         {isLoading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                                 {[1, 2, 3].map(i => (
-                                    <Card key={i}>
+                                    <Card key={i} className="!border-border/50">
                                         <div className="aspect-square bg-muted animate-pulse" />
-                                        <CardContent className="p-6 space-y-4">
+                                        <div className="p-6 space-y-4">
                                             <div className="h-6 bg-muted animate-pulse rounded w-3/4" />
                                             <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
                                             <div className="h-12 bg-muted animate-pulse rounded w-full" />
-                                        </CardContent>
+                                        </div>
                                     </Card>
                                 ))}
                             </div>
@@ -104,7 +104,7 @@ export default function TrainersPage() {
                                             whileHover={{ y: -5 }}
                                             transition={{ type: 'spring', stiffness: 300 }}
                                         >
-                                            <Card className="group hover:border-primary/50 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 overflow-hidden h-full">
+                                            <Card className="group hover:!border-primary/50 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 overflow-hidden h-full !border-border/50">
                                                 <div className="aspect-square bg-gradient-to-br from-primary/20 via-primary/10 to-primary/5 relative overflow-hidden">
                                                     <div className="absolute inset-0 flex items-center justify-center">
                                                         <motion.div
@@ -117,7 +117,7 @@ export default function TrainersPage() {
                                                     </div>
                                                     <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                                                 </div>
-                                                <CardContent className="p-6 space-y-4">
+                                                <div className="p-6 space-y-4">
                                                     <div>
                                                         <h3 className="text-xl font-bold group-hover:text-primary transition-colors">{trainer.name}</h3>
                                                         <p className="text-sm text-primary font-medium">Certified Trainer</p>
@@ -172,7 +172,7 @@ export default function TrainersPage() {
                                                                 <div className="text-sm font-medium mb-2 text-muted-foreground">Certifications:</div>
                                                                 <div className="flex flex-wrap gap-2">
                                                                     {trainer.certifications.map((cert, idx) => (
-                                                                        <Badge key={idx} variant="secondary" className="text-xs bg-primary/10 text-primary border-primary/20">{cert}</Badge>
+                                                                        <Tag key={idx} value={cert} severity="info" className="text-xs" />
                                                                     ))}
                                                                 </div>
                                                             </div>
@@ -182,7 +182,7 @@ export default function TrainersPage() {
                                                                 <div className="text-sm font-medium mb-2 text-muted-foreground">Specializations:</div>
                                                                 <div className="flex flex-wrap gap-2">
                                                                     {trainer.specializations.map((spec, idx) => (
-                                                                        <Badge key={idx} variant="outline" className="text-xs border-border/50">{spec}</Badge>
+                                                                        <Tag key={idx} value={spec} severity="secondary" className="text-xs" />
                                                                     ))}
                                                                 </div>
                                                             </div>
@@ -190,11 +190,13 @@ export default function TrainersPage() {
                                                     </div>
 
                                                     <Link href="/signup" className="block">
-                                                        <Button className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg shadow-red-500/20" size="sm">
-                                                            Choose Trainer
-                                                        </Button>
+                                                        <Button
+                                                            className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white border-red-500 shadow-lg shadow-red-500/20"
+                                                            size="small"
+                                                            label="Choose Trainer"
+                                                        />
                                                     </Link>
-                                                </CardContent>
+                                                </div>
                                             </Card>
                                         </motion.div>
                                     </Reveal>

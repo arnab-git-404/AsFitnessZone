@@ -4,7 +4,7 @@ import React from "react";
 import { Star } from "lucide-react";
 import LogoLoop from "@/components/LogoLoop";
 import { motion } from "framer-motion";
-import { Card, CardContent } from "../ui/card";
+import { Card } from "primereact/card";
 
 const testimonials = [
   {
@@ -51,8 +51,8 @@ const testimonials = [
 
 const TestimonialCard = React.memo(({ testimonial }: { testimonial: typeof testimonials[0] }) => {
   return (
-    <Card className="w-[350px] h-[220px] hover:shadow-xl transition-shadow duration-300 flex flex-col">
-      <CardContent className="flex flex-col h-full">
+    <Card className="w-[350px] h-[220px] hover:shadow-xl transition-shadow duration-300 !border-border/50">
+      <div className="flex flex-col h-full">
 
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-1">
@@ -81,7 +81,7 @@ const TestimonialCard = React.memo(({ testimonial }: { testimonial: typeof testi
         {/* <span className="text-foreground">{testimonial.name}</span> */}
         {/* <div className="flex items-center justify-between border-t pt-4 mt-auto">
         </div> */}
-      </CardContent>
+      </div>
     </Card>
   );
 });

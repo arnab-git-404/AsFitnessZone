@@ -6,6 +6,7 @@ export interface IMedia {
     url: string;
     publicId: string;
     category?: string;
+    order: number;
     uploadedBy: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
@@ -29,6 +30,10 @@ const MediaSchema = new Schema<IMedia>(
         category: {
             type: String,
             default: 'general',
+        },
+        order: {
+            type: Number,
+            default: 0,
         },
         uploadedBy: {
             type: Schema.Types.ObjectId,

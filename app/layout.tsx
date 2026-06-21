@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
+// PrimeReact CSS
+import "primereact/resources/themes/lara-light-blue/theme.css";
+import "primereact/resources/primereact.min.css";
+import "primeicons/primeicons.css";
 import { Toaster } from "@/components/ui/sonner";
-import { ThemeProvider } from "next-themes";
 import Script from "next/script";
 import { Analytics } from "@vercel/analytics/next"
 
@@ -81,10 +84,9 @@ export default function RootLayout({
           }}
         />
 
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {children}
-        </ThemeProvider>
-          <Analytics />
+        {children}
+          
+        <Analytics />
         <Toaster />
       </body>
     </html>

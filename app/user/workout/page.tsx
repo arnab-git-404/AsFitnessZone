@@ -1,16 +1,15 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Plus, Trash2, ChevronLeft, LogOut } from 'lucide-react';
-import { toast } from 'sonner';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { InputTextarea } from 'primereact/inputtextarea';
+import { Tag } from 'primereact/tag';
+import { Toast } from 'primereact/toast';
+import { Dumbbell, Plus, Trash2, LogOut } from 'lucide-react';
 import type { WorkoutResponse } from '@/lib/types';
 
 interface Exercise {
@@ -23,6 +22,7 @@ interface Exercise {
 
 export default function WorkoutPage() {
     const router = useRouter();
+    const toastRef = useRef<Toast>(null);
     const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
     const [exercises, setExercises] = useState<Exercise[]>([
         { name: '', sets: 3, reps: 10, weight: 0 },
@@ -66,7 +66,7 @@ export default function WorkoutPage() {
 
         const validExercises = exercises.filter(ex => ex.name.trim());
         if (validExercises.length === 0) {
-            toast.error('Add at least one exercise');
+            toastRef.current?.show({ severity: 'error', summary: 'Add at least one exercise' });
             return;
         }
 
@@ -84,15 +84,15 @@ export default function WorkoutPage() {
             });
 
             if (r.ok) {
-                toast.success('Workout logged! 💪');
+                toastRef.current?.show({ severity: 'success', summary: 'Workout logged! 💪' });
                 setExercises([{ name: '', sets: 3, reps: 10, weight: 0 }]);
                 setNotes('');
                 fetchWorkouts();
             } else {
                 const data = await r.json();
-                toast.error(data.error || 'Failed to log workout');
+                toastRef.current?.show({ severity: 'error', summary: data.error || 'Failed to log workout' });
             }
-        } catch { toast.error('Something went wrong'); }
+        } catch { toastRef.current?.show({ severity: 'error', summary: 'Something went wrong' }); }
         finally { setIsSaving(false); }
     };
 
@@ -103,13 +103,14 @@ export default function WorkoutPage() {
 
     return (
         <div className="min-h-screen bg-background">
+            <Toast ref={toastRef} />
             <header className="border-b border-border bg-card">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                        <Link href="/user/dashboard"><Button variant="ghost" size="icon"><ChevronLeft className="h-5 w-5" /></Button></Link>
+                        <Link href="/user/dashboard"><Button className="p-button-text" icon="pi pi-chevron-left" /></Link>
                         <span className="text-xl font-bold">Workout Log</span>
                     </div>
-                    <Button variant="ghost" onClick={handleLogout}><LogOut className="h-4 w-4 mr-2" />Logout</Button>
+                    <Button className="p-button-text" onClick={handleLogout}><LogOut className="h-4 w-4 mr-2" />Logout</Button>
                 </div>
             </header>
 
@@ -117,65 +118,63 @@ export default function WorkoutPage() {
                 <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
                     {/* Log Form */}
                     <div className="space-y-6">
-                        <Card>
-                            <CardHeader><CardTitle>Log Today&apos;s Workout</CardTitle></CardHeader>
-                            <CardContent>
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <h2 className="text-lg font-semibold mb-4">Log Today&apos;s Workout</h2>
                                 <form onSubmit={handleSubmit} className="space-y-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="date">Date</Label>
-                                        <Input id="date" type="date" value={date} onChange={e => setDate(e.target.value)} />
+                                        <label className="text-sm font-medium" htmlFor="date">Date</label>
+                                        <InputText id="date" type="date" value={date} onChange={e => setDate(e.target.value)} className="w-full" />
                                     </div>
 
                                     {/* Exercises */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <Label>Exercises</Label>
-                                            <Button type="button" variant="ghost" size="sm" onClick={addExercise}>
+                                            <span className="text-sm font-medium">Exercises</span>
+                                            <Button type="button" className="p-button-text" onClick={addExercise}>
                                                 <Plus className="h-4 w-4 mr-1" /> Add
                                             </Button>
                                         </div>
                                         {exercises.map((ex, i) => (
                                             <div key={i} className="p-3 border border-border rounded-lg space-y-2">
                                                 <div className="flex items-center gap-2">
-                                                    <Input
+                                                    <InputText
                                                         placeholder="Exercise name"
                                                         value={ex.name}
                                                         onChange={e => updateExercise(i, 'name', e.target.value)}
                                                         className="flex-1 h-9 text-sm"
                                                     />
-                                                    <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => removeExercise(i)}>
-                                                        <Trash2 className="h-4 w-4" />
-                                                    </Button>
+                                                    <Button type="button" className="p-button-text p-button-rounded p-button-danger" icon="pi pi-trash" onClick={() => removeExercise(i)} />
                                                 </div>
                                                 <div className="grid grid-cols-3 gap-2">
                                                     <div>
-                                                        <Label className="text-xs">Sets</Label>
-                                                        <Input
+                                                        <label className="text-xs text-muted-foreground">Sets</label>
+                                                        <InputText
                                                             type="number"
-                                                            value={ex.sets}
+                                                            value={String(ex.sets)}
                                                             onChange={e => updateExercise(i, 'sets', Number(e.target.value))}
                                                             min={1}
-                                                            className="h-9 text-sm"
+                                                            className="h-9 text-sm w-full"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-xs">Reps</Label>
-                                                        <Input
+                                                        <label className="text-xs text-muted-foreground">Reps</label>
+                                                        <InputText
                                                             type="number"
-                                                            value={ex.reps}
+                                                            value={String(ex.reps)}
                                                             onChange={e => updateExercise(i, 'reps', Number(e.target.value))}
                                                             min={1}
-                                                            className="h-9 text-sm"
+                                                            className="h-9 text-sm w-full"
                                                         />
                                                     </div>
                                                     <div>
-                                                        <Label className="text-xs">Weight (kg)</Label>
-                                                        <Input
+                                                        <label className="text-xs text-muted-foreground">Weight (kg)</label>
+                                                        <InputText
                                                             type="number"
-                                                            value={ex.weight}
+                                                            value={String(ex.weight)}
                                                             onChange={e => updateExercise(i, 'weight', Number(e.target.value))}
                                                             min={0}
-                                                            className="h-9 text-sm"
+                                                            className="h-9 text-sm w-full"
                                                         />
                                                     </div>
                                                 </div>
@@ -184,20 +183,18 @@ export default function WorkoutPage() {
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="duration">Duration (minutes)</Label>
-                                        <Input id="duration" type="number" value={duration} onChange={e => setDuration(e.target.value ? Number(e.target.value) : '')} min={0} />
+                                        <label className="text-sm font-medium" htmlFor="duration">Duration (minutes)</label>
+                                        <InputText id="duration" type="number" value={String(duration)} onChange={e => setDuration(e.target.value ? Number(e.target.value) : '')} min={0} className="w-full" />
                                     </div>
 
                                     <div className="space-y-2">
-                                        <Label htmlFor="notes">Notes</Label>
-                                        <Textarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="How did it feel? Any observations..." />
+                                        <label className="text-sm font-medium" htmlFor="notes">Notes</label>
+                                        <InputTextarea id="notes" value={notes} onChange={e => setNotes(e.target.value)} rows={2} placeholder="How did it feel? Any observations..." className="w-full" />
                                     </div>
 
-                                    <Button type="submit" className="w-full bg-primary hover:bg-primary/90" disabled={isSaving}>
-                                        {isSaving ? 'Saving...' : 'Save Workout'}
-                                    </Button>
+                                    <Button type="submit" className="w-full bg-primary border-primary text-white" label={isSaving ? 'Saving...' : 'Save Workout'} disabled={isSaving} />
                                 </form>
-                            </CardContent>
+                            </div>
                         </Card>
                     </div>
 
@@ -207,21 +204,21 @@ export default function WorkoutPage() {
                         {isLoading ? (
                             <div className="text-center py-8 text-muted-foreground">Loading...</div>
                         ) : workouts.length === 0 ? (
-                            <Card>
-                                <CardContent className="py-8 text-center text-muted-foreground">
+                            <Card className="!border-border/50">
+                                <div className="py-8 text-center text-muted-foreground">
                                     <Dumbbell className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                     <p className="text-sm">No workouts logged yet</p>
-                                </CardContent>
+                                </div>
                             </Card>
                         ) : (
                             workouts.map((w) => (
-                                <Card key={w._id}>
-                                    <CardContent className="p-4">
+                                <Card key={w._id} className="!border-border/50">
+                                    <div className="p-4">
                                         <div className="flex items-center justify-between mb-2">
                                             <span className="font-medium text-sm">
                                                 {new Date(w.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
                                             </span>
-                                            {w.duration ? <Badge variant="secondary">{w.duration} min</Badge> : null}
+                                            {w.duration ? <Tag value={`${w.duration} min`} severity="secondary" /> : null}
                                         </div>
                                         <div className="grid grid-cols-2 gap-1.5">
                                             {w.exercises.map((ex, i) => (
@@ -236,7 +233,7 @@ export default function WorkoutPage() {
                                         {w.notes && (
                                             <p className="text-xs text-muted-foreground mt-2 italic">{w.notes}</p>
                                         )}
-                                    </CardContent>
+                                    </div>
                                 </Card>
                             ))
                         )}

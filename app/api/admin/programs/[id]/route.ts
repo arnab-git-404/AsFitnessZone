@@ -60,7 +60,7 @@ const _PUT = async (
 
 export const PUT = withActivityLog('update_program', _PUT);
 
-const _DELETE = async (
+const _PATCH = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -72,17 +72,30 @@ const _DELETE = async (
 
         await connectDB();
         const { id } = await params;
-        const program = await Program.findByIdAndDelete(id);
+        const body = await request.json();
 
-        if (!program) {
-            return NextResponse.json({ error: 'Program not found' }, { status: 404 });
+        if (body.isActive !== undefined) {
+            const program = await Program.findByIdAndUpdate(
+                id,
+                { isActive: Boolean(body.isActive) },
+                { new: true }
+            );
+
+            if (!program) {
+                return NextResponse.json({ error: 'Program not found' }, { status: 404 });
+            }
+
+            return NextResponse.json({
+                message: body.isActive ? 'Program activated' : 'Program deactivated',
+                program,
+            });
         }
 
-        return NextResponse.json({ message: 'Program deleted successfully' }, { status: 200 });
+        return NextResponse.json({ error: 'isActive field is required' }, { status: 400 });
     } catch (error: any) {
-        console.error('Delete program error:', error);
+        console.error('Toggle program status error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 };
 
-export const DELETE = withActivityLog('delete_program', _DELETE);
+export const PATCH = withActivityLog('toggle_program_status', _PATCH);

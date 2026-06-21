@@ -1,20 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
+import React, { useState, useRef } from "react";
+import { Button } from "primereact/button";
+import { Card } from "primereact/card";
+import { InputText } from "primereact/inputtext";
+import { Tag } from "primereact/tag";
+import { Toast } from "primereact/toast";
 import Link from "next/link";
-import { Check, Star, Percent, X, Tag, Loader2 } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Check, Star, Percent, X, Tag as TagIcon, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-
-interface CouponResult {
-    code: string;
-    discountType: "percentage" | "fixed";
-    discountValue: number;
-    discountAmount: number;
-}
 
 interface AppliedCoupon {
     code: string;
@@ -68,6 +62,7 @@ const plans = [
 ];
 
 export default function Price() {
+    const toastRef = useRef<Toast>(null);
     const [couponInput, setCouponInput] = useState("");
     const [isValidating, setIsValidating] = useState(false);
     const [appliedCoupons, setAppliedCoupons] = useState<Record<number, AppliedCoupon | null>>({});
@@ -103,17 +98,20 @@ export default function Price() {
                     },
                 }));
                 setCouponInput("");
+                toastRef.current?.show({ severity: "success", summary: "Coupon Applied", detail: `You saved ₹${data.savings}!` });
             } else {
                 setCouponErrors((prev) => ({
                     ...prev,
                     [planIndex]: data.error || "Invalid coupon",
                 }));
+                toastRef.current?.show({ severity: "error", summary: "Invalid Coupon", detail: data.error || "Invalid coupon" });
             }
         } catch {
             setCouponErrors((prev) => ({
                 ...prev,
                 [planIndex]: "Failed to validate coupon",
             }));
+            toastRef.current?.show({ severity: "error", summary: "Error", detail: "Failed to validate coupon" });
         } finally {
             setIsValidating(false);
         }
@@ -126,6 +124,7 @@ export default function Price() {
 
     return (
         <section className="py-10 min-h-screen">
+            <Toast ref={toastRef} />
             <div className="container mx-auto px-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                     {plans.map((plan, index) => {
@@ -142,37 +141,30 @@ export default function Price() {
                                 transition={{ duration: 0.5, delay: index * 0.2 }}
                             >
                                 <Card
-                                    className={`relative h-full flex flex-col ${
+                                    className={`relative h-full flex flex-col !border-border/50 ${
                                         plan.popular
-                                            ? "border-primary shadow-lg shadow-primary/20 scale-105"
-                                            : "hover:border-primary/50"
+                                            ? "!border-primary shadow-lg shadow-primary/20 scale-105"
+                                            : "hover:!border-primary/50"
                                     } transition-all duration-300`}
                                 >
                                     {plan.popular && (
                                         <motion.div
-                                            className="absolute top-4 left-1/2 -translate-x-1/2 border-1 rounded-full"
+                                            className="absolute top-4 left-1/2 -translate-x-1/2 z-10"
                                             initial={{ scale: 0 }}
                                             whileInView={{ scale: 1 }}
                                             viewport={{ once: true }}
                                             transition={{ delay: 0.5, type: "spring" }}
                                         >
-                                            <Badge className="bg-gradient-to-r from-red-500 to-orange-500 px-4 py-1">
-                                                <Star className="h-3 w-3 mr-1 fill-current" />
-                                                Most Popular
-                                            </Badge>
+                                            <Tag value="Most Popular" severity="danger" className="px-4 py-1 text-sm" />
                                         </motion.div>
                                     )}
 
-                                    <CardContent className="p-8 space-y-6 flex flex-col flex-1">
+                                    <div className="p-8 space-y-6 flex flex-col flex-1">
                                         <div className="text-center space-y-2">
                                             <h3 className="text-2xl font-bold">{plan.name}</h3>
-                                            <p className="text-sm text-muted-foreground">
-                                                {plan.duration}
-                                            </p>
+                                            <p className="text-sm text-muted-foreground">{plan.duration}</p>
                                             {plan.savings && (
-                                                <Badge variant="secondary" className="text-xs">
-                                                    {plan.savings}
-                                                </Badge>
+                                                <span className="inline-block text-xs bg-secondary text-secondary-foreground rounded-full px-3 py-1">{plan.savings}</span>
                                             )}
                                         </div>
 
@@ -180,24 +172,18 @@ export default function Price() {
                                             <div className="flex items-baseline justify-center">
                                                 {appliedCoupon ? (
                                                     <>
-                                                        <span className="text-3xl font-bold text-muted-foreground line-through">
-                                                            ₹{plan.price}
-                                                        </span>
-                                                        <span className="text-5xl font-bold text-primary ml-3">
-                                                            ₹{discountedPrice}
-                                                        </span>
+                                                        <span className="text-3xl font-bold text-muted-foreground line-through">₹{plan.price}</span>
+                                                        <span className="text-5xl font-bold text-primary ml-3">₹{discountedPrice}</span>
                                                     </>
                                                 ) : (
                                                     <span className="text-5xl font-bold">₹{plan.price}</span>
                                                 )}
-                                                <span className="text-muted-foreground ml-2">
-                                                    /{plan.duration.toLowerCase()}
-                                                </span>
+                                                <span className="text-muted-foreground ml-2">/{plan.duration.toLowerCase()}</span>
                                             </div>
                                             {appliedCoupon && (
-                                                <Badge variant="secondary" className="mt-2 bg-green-500/20 text-green-600 border-green-500">
+                                                <span className="inline-block mt-2 text-xs bg-green-500/20 text-green-600 border border-green-500 rounded-full px-3 py-1">
                                                     Save ₹{appliedCoupon.discountAmount} with {appliedCoupon.code}
-                                                </Badge>
+                                                </span>
                                             )}
                                         </div>
 
@@ -212,9 +198,7 @@ export default function Price() {
                                                     transition={{ delay: 0.6 + idx * 0.1 }}
                                                 >
                                                     <Check className="h-5 w-5 text-primary mr-2 flex-shrink-0 mt-0.5" />
-                                                    <span className="text-sm leading-relaxed">
-                                                        {feature}
-                                                    </span>
+                                                    <span className="text-sm leading-relaxed">{feature}</span>
                                                 </motion.li>
                                             ))}
                                         </ul>
@@ -224,28 +208,26 @@ export default function Price() {
                                             {appliedCoupon ? (
                                                 <div className="flex items-center justify-between bg-primary/10 rounded-lg px-3 py-2">
                                                     <div className="flex items-center gap-2">
-                                                        <Tag className="h-4 w-4 text-primary" />
+                                                        <TagIcon className="h-4 w-4 text-primary" />
                                                         <span className="text-sm font-medium">{appliedCoupon.code}</span>
                                                     </div>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="icon"
-                                                        className="h-6 w-6"
+                                                    <button
                                                         onClick={() => handleRemoveCoupon(index)}
+                                                        className="text-muted-foreground hover:text-primary cursor-pointer"
                                                     >
                                                         <X className="h-3 w-3" />
-                                                    </Button>
+                                                    </button>
                                                 </div>
                                             ) : (
                                                 <div className="flex gap-2">
                                                     <div className="relative flex-1">
                                                         <Percent className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                                        <Input
+                                                        <InputText
                                                             placeholder="Coupon code"
                                                             value={couponInput}
                                                             onChange={(e) => setCouponInput(e.target.value)}
-                                                            className="pl-8 h-9 text-sm"
-                                                            onKeyDown={(e) => {
+                                                            className="w-full pl-8 h-9 text-sm"
+                                                            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
                                                                 if (e.key === "Enter") {
                                                                     e.preventDefault();
                                                                     handleApplyCoupon(index, plan.price);
@@ -254,37 +236,26 @@ export default function Price() {
                                                         />
                                                     </div>
                                                     <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="h-9"
+                                                        className="h-9 p-button-outlined cursor-pointer"
                                                         onClick={() => handleApplyCoupon(index, plan.price)}
                                                         disabled={isValidating || !couponInput.trim()}
-                                                    >
-                                                        {isValidating ? (
-                                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                                        ) : (
-                                                            "Apply"
-                                                        )}
-                                                    </Button>
+                                                        label="Apply"
+                                                    />
                                                 </div>
                                             )}
                                             {error && (
-                                                <p className="text-xs text-destructive">{error}</p>
+                                                <p className="text-xs text-red-500">{error}</p>
                                             )}
                                         </div>
 
                                         <Link href="/signup" className="block mt-auto">
                                             <Button
-                                                variant="custom"
-                                                className="w-full hover:cursor-pointer"
-                                                size="lg"
-                                            >
-                                                {appliedCoupon
-                                                    ? `Get Started @ ₹${discountedPrice}`
-                                                    : "Get Started"}
-                                            </Button>
+                                                className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white border-red-500 shadow-lg shadow-red-500/20"
+                                                size="large"
+                                                label={appliedCoupon ? `Get Started @ ₹${discountedPrice}` : "Get Started"}
+                                            />
                                         </Link>
-                                    </CardContent>
+                                    </div>
                                 </Card>
                             </motion.div>
                         );

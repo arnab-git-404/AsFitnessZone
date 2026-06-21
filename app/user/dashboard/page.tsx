@@ -1,20 +1,18 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { Tag } from 'primereact/tag';
+import { Toast } from 'primereact/toast';
 import {
     Dumbbell, User, LogOut, Target, TrendingUp, CalendarCheck, Flame,
     CheckCircle2, Clock, Activity, Droplets, Plus, Minus, ChevronRight,
-    LineChart, Calculator, UserCheck, Award
+    Calculator, UserCheck, Award
 } from 'lucide-react';
-import { toast } from 'sonner';
-import type { UserResponse, WorkoutResponse, TrainerAssignmentResponse, TrainerResponse } from '@/lib/types';
+import type { UserResponse, WorkoutResponse } from '@/lib/types';
 
 interface CheckInData {
     todayCheckIn: boolean;
@@ -31,6 +29,7 @@ interface WaterData {
 
 export default function UserDashboard() {
     const router = useRouter();
+    const toastRef = useRef<Toast>(null);
     const [user, setUser] = useState<UserResponse | null>(null);
     const [checkIn, setCheckIn] = useState<CheckInData | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -115,10 +114,10 @@ export default function UserDashboard() {
         try {
             const r = await fetch('/api/user/checkin', { method: 'POST' });
             const data = await r.json();
-            if (r.ok) { toast.success('Checked in successfully! 💪'); fetchCheckIn(); }
-            else if (r.status === 409) { toast.error('Already checked in today!'); fetchCheckIn(); }
-            else { toast.error(data.error || 'Check-in failed'); }
-        } catch { toast.error('Something went wrong'); }
+            if (r.ok) { toastRef.current?.show({ severity: 'success', summary: 'Checked in successfully! 💪' }); fetchCheckIn(); }
+            else if (r.status === 409) { toastRef.current?.show({ severity: 'error', summary: 'Already checked in today!' }); fetchCheckIn(); }
+            else { toastRef.current?.show({ severity: 'error', summary: data.error || 'Check-in failed' }); }
+        } catch { toastRef.current?.show({ severity: 'error', summary: 'Something went wrong' }); }
         finally { setIsCheckingIn(false); }
     }, []);
 
@@ -132,12 +131,12 @@ export default function UserDashboard() {
                 body: JSON.stringify({ glasses }),
             });
             fetchWater();
-        } catch { toast.error('Failed to update water intake'); }
+        } catch { toastRef.current?.show({ severity: 'error', summary: 'Failed to update water intake' }); }
     };
 
     const handleLogout = async () => {
         await fetch('/api/auth/logout', { method: 'POST' });
-        toast.success('Logged out successfully');
+        toastRef.current?.show({ severity: 'success', summary: 'Logged out successfully' });
         router.push('/');
     };
 
@@ -154,15 +153,16 @@ export default function UserDashboard() {
 
     return (
         <div className="min-h-screen bg-background">
+            <Toast ref={toastRef} />
             <header className="border-b border-border bg-card">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <Link href="/" className="flex items-center space-x-2">
-                        <div className="rounded-lg bg-primary p-2"><Dumbbell className="h-6 w-6 text-primary-foreground" /></div>
+                        <div className="rounded-lg bg-primary p-2"><Dumbbell className="h-6 w-6 text-white" /></div>
                         <span className="text-xl font-bold bg-gradient-to-r from-primary to-red-400 bg-clip-text text-transparent">FitnessGym</span>
                     </Link>
                     <div className="flex items-center space-x-4">
-                        <Link href="/user/profile"><Button variant="ghost"><User className="h-4 w-4 mr-2" />Profile</Button></Link>
-                        <Button variant="ghost" onClick={handleLogout}><LogOut className="h-4 w-4 mr-2" />Logout</Button>
+                        <Link href="/user/profile"><Button className="p-button-text"><User className="h-4 w-4 mr-2" />Profile</Button></Link>
+                        <Button className="p-button-text" onClick={handleLogout}><LogOut className="h-4 w-4 mr-2" />Logout</Button>
                     </div>
                 </div>
             </header>
@@ -179,54 +179,54 @@ export default function UserDashboard() {
 
                     {/* Stats Grid — 4 cards */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Current Weight</CardTitle>
-                                <TrendingUp className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-muted-foreground">Current Weight</span>
+                                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                                </div>
                                 <div className="text-2xl font-bold">{user?.customer?.weight ? `${user.customer.weight} kg` : 'Not set'}</div>
-                                <p className="text-xs text-muted-foreground">Update in profile</p>
-                            </CardContent>
+                                <p className="text-xs text-muted-foreground mt-1">Update in profile</p>
+                            </div>
                         </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Fitness Goal</CardTitle>
-                                <Target className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-muted-foreground">Fitness Goal</span>
+                                    <Target className="h-4 w-4 text-muted-foreground" />
+                                </div>
                                 <div className="text-2xl font-bold capitalize">{user?.customer?.fitnessGoal ? user.customer.fitnessGoal.replace('-', ' ') : 'Not set'}</div>
-                                <p className="text-xs text-muted-foreground">Set your goal</p>
-                            </CardContent>
+                                <p className="text-xs text-muted-foreground mt-1">Set your goal</p>
+                            </div>
                         </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Check-in Streak</CardTitle>
-                                <Flame className="h-4 w-4 text-orange-500" />
-                            </CardHeader>
-                            <CardContent>
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-muted-foreground">Check-in Streak</span>
+                                    <Flame className="h-4 w-4 text-orange-500" />
+                                </div>
                                 <div className="text-2xl font-bold text-orange-500">{checkIn ? `${checkIn.streak} days` : '-'}</div>
-                                <p className="text-xs text-muted-foreground">{checkIn ? `${checkIn.totalCheckIns} total` : 'Loading...'}</p>
-                            </CardContent>
+                                <p className="text-xs text-muted-foreground mt-1">{checkIn ? `${checkIn.totalCheckIns} total` : 'Loading...'}</p>
+                            </div>
                         </Card>
-                        <Card>
-                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                                <CardTitle className="text-sm font-medium">Member Since</CardTitle>
-                                <User className="h-4 w-4 text-muted-foreground" />
-                            </CardHeader>
-                            <CardContent>
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-2">
+                                    <span className="text-sm font-medium text-muted-foreground">Member Since</span>
+                                    <User className="h-4 w-4 text-muted-foreground" />
+                                </div>
                                 <div className="text-2xl font-bold">
                                     {user?.createdAt ? new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'N/A'}
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
                     </div>
 
                     {/* Row: Check-In + Water Intake */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Check-In Card */}
-                        <Card className="border-primary/20">
-                            <CardContent className="p-6">
+                        <Card className="!border-primary/20">
+                            <div className="p-6">
                                 <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                                     <div className="flex items-center gap-4">
                                         <div className={`w-14 h-14 rounded-full flex items-center justify-center ${checkIn?.todayCheckIn ? 'bg-green-500/20' : 'bg-primary/10'}`}>
@@ -240,18 +240,17 @@ export default function UserDashboard() {
                                     <Button
                                         onClick={handleCheckIn}
                                         disabled={isCheckingIn || checkIn?.todayCheckIn}
-                                        className={`${checkIn?.todayCheckIn ? 'bg-green-600 hover:bg-green-700' : 'bg-primary hover:bg-primary/90'} min-w-[120px]`}
-                                        size="sm"
+                                        className={`${checkIn?.todayCheckIn ? 'bg-green-600 hover:bg-green-700 border-green-600' : 'bg-primary border-primary text-white'} min-w-[120px]`}
                                     >
                                         {isCheckingIn ? '...' : checkIn?.todayCheckIn ? 'Checked In ✓' : 'Check In'}
                                     </Button>
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
 
                         {/* Water Intake Card */}
-                        <Card>
-                            <CardContent className="p-6">
+                        <Card className="!border-border/50">
+                            <div className="p-6">
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center">
@@ -262,19 +261,15 @@ export default function UserDashboard() {
                                             <p className="text-xs text-muted-foreground">Aim for 8-12 glasses/day</p>
                                         </div>
                                     </div>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8" disabled><LineChart className="h-4 w-4" /></Button>
+                                    <Button className="p-button-text p-button-rounded" icon="pi pi-chart-line" disabled />
                                 </div>
                                 <div className="flex items-center justify-center gap-4 mt-4">
-                                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateWater(Math.max(0, waterInput - 1))}>
-                                        <Minus className="h-4 w-4" />
-                                    </Button>
+                                    <Button className="p-button-outlined p-button-rounded" icon="pi pi-minus" onClick={() => updateWater(Math.max(0, waterInput - 1))} />
                                     <div className="text-center">
                                         <span className="text-3xl font-bold text-blue-500">{water?.todayGlasses ?? 0}</span>
                                         <span className="text-sm text-muted-foreground ml-1">glasses</span>
                                     </div>
-                                    <Button variant="outline" size="icon" className="h-8 w-8 rounded-full" onClick={() => updateWater(waterInput + 1)}>
-                                        <Plus className="h-4 w-4" />
-                                    </Button>
+                                    <Button className="p-button-outlined p-button-rounded" icon="pi pi-plus" onClick={() => updateWater(waterInput + 1)} />
                                 </div>
                                 <div className="flex justify-center gap-4 mt-2 text-xs text-muted-foreground">
                                     <span>🔥 {water?.streak || 0} day streak</span>
@@ -293,25 +288,23 @@ export default function UserDashboard() {
                                         />
                                     ))}
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
                     </div>
 
                     {/* Trainer Card */}
                     {trainerAssignment && trainerAssignment.trainerId && (
-                        <Card className="border-primary/30">
-                            <CardHeader className="flex flex-row items-center justify-between">
-                                <CardTitle className="flex items-center gap-2">
-                                    <UserCheck className="h-5 w-5 text-primary" />
-                                    My Trainer
-                                </CardTitle>
-                                <Link href="/user/trainer">
-                                    <Button variant="outline" size="sm">
-                                        Manage <ChevronRight className="h-4 w-4 ml-1" />
-                                    </Button>
-                                </Link>
-                            </CardHeader>
-                            <CardContent>
+                        <Card className="!border-primary/30">
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h2 className="text-lg font-semibold flex items-center gap-2">
+                                        <UserCheck className="h-5 w-5 text-primary" />
+                                        My Trainer
+                                    </h2>
+                                    <Link href="/user/trainer">
+                                        <Button className="p-button-outlined">Manage <ChevronRight className="h-4 w-4 ml-1" /></Button>
+                                    </Link>
+                                </div>
                                 <div className="flex items-center gap-4">
                                     <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                         <Award className="h-7 w-7 text-primary" />
@@ -324,26 +317,24 @@ export default function UserDashboard() {
                                             <span>₹{trainerAssignment.amount}</span>
                                         </div>
                                     </div>
-                                    <Badge variant="default" className="bg-green-500/10 text-green-600 border-green-500/30">Active</Badge>
+                                    <Tag value="Active" severity="success" />
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
                     )}
 
                     {/* Workout Card */}
-                    <Card>
-                        <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="flex items-center gap-2">
-                                <Activity className="h-5 w-5 text-primary" />
-                                Latest Workout
-                            </CardTitle>
-                            <Link href="/user/workout">
-                                <Button variant="outline" size="sm">
-                                    Log Workout <ChevronRight className="h-4 w-4 ml-1" />
-                                </Button>
-                            </Link>
-                        </CardHeader>
-                        <CardContent>
+                    <Card className="!border-border/50">
+                        <div className="p-6">
+                            <div className="flex items-center justify-between mb-4">
+                                <h2 className="text-lg font-semibold flex items-center gap-2">
+                                    <Activity className="h-5 w-5 text-primary" />
+                                    Latest Workout
+                                </h2>
+                                <Link href="/user/workout">
+                                    <Button className="p-button-outlined">Log Workout <ChevronRight className="h-4 w-4 ml-1" /></Button>
+                                </Link>
+                            </div>
                             {recentWorkout ? (
                                 <div className="space-y-3">
                                     <div className="flex items-center justify-between text-sm">
@@ -351,7 +342,7 @@ export default function UserDashboard() {
                                             {new Date(recentWorkout.date).toLocaleDateString('en-US', { weekday: 'long', month: 'short', day: 'numeric' })}
                                         </span>
                                         {recentWorkout.duration ? (
-                                            <Badge variant="secondary">{recentWorkout.duration} min</Badge>
+                                            <Tag value={`${recentWorkout.duration} min`} severity="secondary" />
                                         ) : null}
                                     </div>
                                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -373,59 +364,57 @@ export default function UserDashboard() {
                                     <Activity className="h-8 w-8 mx-auto mb-2 opacity-50" />
                                     <p className="text-sm">No workouts logged yet</p>
                                     <Link href="/user/workout">
-                                        <Button variant="link" className="text-primary mt-1">Log your first workout</Button>
+                                        <Button className="p-button-link text-primary mt-1">Log your first workout</Button>
                                     </Link>
                                 </div>
                             )}
-                        </CardContent>
+                        </div>
                     </Card>
 
                     {/* Recent Check-ins */}
                     {checkIn?.recentCheckIns && checkIn.recentCheckIns.length > 0 && (
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2 text-sm">
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <h2 className="text-sm font-semibold flex items-center gap-2 mb-3">
                                     <Clock className="h-4 w-4" /> Recent Activity
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent>
+                                </h2>
                                 <div className="flex flex-wrap gap-1.5">
                                     {checkIn.recentCheckIns.slice(0, 14).map((c) => {
                                         const d = new Date(c.date);
                                         return (
-                                            <Badge key={c.date} variant="secondary" className="text-xs py-0.5 px-2">
-                                                {d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}
-                                            </Badge>
+                                            <Tag key={c.date} value={d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })} severity="secondary" className="text-xs py-0.5 px-2" />
                                         );
                                     })}
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
                     )}
 
                     {/* Complete Your Profile */}
                     {(!user?.customer?.weight || !user?.customer?.height || !user?.customer?.fitnessGoal) && (
-                        <Card className="border-primary/50 bg-primary/5">
-                            <CardContent className="p-6">
+                        <Card className="!border-primary/50 !bg-primary/5">
+                            <div className="p-6">
                                 <h3 className="font-semibold mb-2">Complete Your Profile</h3>
                                 <p className="text-sm text-muted-foreground mb-4">Add your fitness details to get personalized recommendations and track your progress effectively.</p>
-                                <Link href="/user/profile"><Button className="bg-primary hover:bg-primary/90">Complete Profile</Button></Link>
-                            </CardContent>
+                                <Link href="/user/profile"><Button className="bg-primary border-primary text-white">Complete Profile</Button></Link>
+                            </div>
                         </Card>
                     )}
 
                     {/* Quick Actions */}
-                    <Card>
-                        <CardHeader><CardTitle>Quick Actions</CardTitle></CardHeader>
-                        <CardContent className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                            <Link href="/user/workout"><Button className="w-full" variant="outline"><Activity className="h-4 w-4 mr-2" />Log Workout</Button></Link>
-                            <Link href="/user/measurements"><Button className="w-full" variant="outline"><TrendingUp className="h-4 w-4 mr-2" />Body Measurements</Button></Link>
-                            <Link href="/bmi-calculator"><Button className="w-full" variant="outline"><Calculator className="h-4 w-4 mr-2" />BMI Calculator</Button></Link>
-                            <Link href="/user/trainer"><Button className="w-full" variant="outline"><UserCheck className="h-4 w-4 mr-2" />My Trainer</Button></Link>
-                            <Link href="/user/profile"><Button className="w-full" variant="outline"><User className="h-4 w-4 mr-2" />Update Profile</Button></Link>
-                            <Link href="/programs"><Button className="w-full" variant="outline"><Dumbbell className="h-4 w-4 mr-2" />Programs</Button></Link>
-                            <Link href="/contact"><Button className="w-full" variant="outline"><Target className="h-4 w-4 mr-2" />Support</Button></Link>
-                        </CardContent>
+                    <Card className="!border-border/50">
+                        <div className="p-6">
+                            <h2 className="text-lg font-semibold mb-4">Quick Actions</h2>
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                                <Link href="/user/workout"><Button className="w-full p-button-outlined"><Activity className="h-4 w-4 mr-2" />Log Workout</Button></Link>
+                                <Link href="/user/measurements"><Button className="w-full p-button-outlined"><TrendingUp className="h-4 w-4 mr-2" />Body Measurements</Button></Link>
+                                <Link href="/bmi-calculator"><Button className="w-full p-button-outlined"><Calculator className="h-4 w-4 mr-2" />BMI Calculator</Button></Link>
+                                <Link href="/user/trainer"><Button className="w-full p-button-outlined"><UserCheck className="h-4 w-4 mr-2" />My Trainer</Button></Link>
+                                <Link href="/user/profile"><Button className="w-full p-button-outlined"><User className="h-4 w-4 mr-2" />Update Profile</Button></Link>
+                                <Link href="/programs"><Button className="w-full p-button-outlined"><Dumbbell className="h-4 w-4 mr-2" />Programs</Button></Link>
+                                <Link href="/contact"><Button className="w-full p-button-outlined"><Target className="h-4 w-4 mr-2" />Support</Button></Link>
+                            </div>
+                        </div>
                     </Card>
                 </div>
             </main>

@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { Tag } from 'primereact/tag';
 import Link from 'next/link';
 import { Dumbbell, Heart, Zap, Target, Users, TrendingUp, Sparkles } from 'lucide-react';
 import { motion } from 'framer-motion';
@@ -78,13 +78,13 @@ export default function ProgramsPage() {
                         {isLoading ? (
                             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                 {[1, 2, 3].map(i => (
-                                    <Card key={i}>
-                                        <CardContent className="p-6 space-y-4">
+                                    <Card key={i} className="!border-border/50">
+                                        <div className="p-6 space-y-4">
                                             <div className="w-14 h-14 rounded-xl bg-muted animate-pulse" />
                                             <div className="h-6 bg-muted animate-pulse rounded w-3/4" />
                                             <div className="h-4 bg-muted animate-pulse rounded w-full" />
                                             <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
-                                        </CardContent>
+                                        </div>
                                     </Card>
                                 ))}
                             </div>
@@ -118,8 +118,8 @@ export default function ProgramsPage() {
                                                 whileHover={{ y: -5 }}
                                                 transition={{ type: 'spring', stiffness: 300 }}
                                             >
-                                                <Card className="group hover:border-primary/50 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 h-full">
-                                                    <CardContent className="p-6 space-y-4">
+                                                <Card className="group hover:!border-primary/50 transition-all duration-500 hover:shadow-xl hover:shadow-primary/10 h-full !border-border/50">
+                                                    <div className="p-6 space-y-4">
                                                         <motion.div
                                                             className={`w-14 h-14 rounded-xl bg-gradient-to-br ${gradients[gIndex]} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}
                                                             whileHover={{ rotate: 10 }}
@@ -131,8 +131,8 @@ export default function ProgramsPage() {
                                                             <p className="text-muted-foreground text-sm leading-relaxed">{program.description}</p>
                                                         </div>
                                                         <div className="flex gap-2">
-                                                            <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20">{program.difficulty || 'All Levels'}</Badge>
-                                                            <Badge variant="outline" className="border-border/50">{program.duration || 'Flexible'}</Badge>
+                                                            <Tag value={program.difficulty || 'All Levels'} severity="info" />
+                                                            <Tag value={program.duration || 'Flexible'} severity="secondary" />
                                                         </div>
                                                         {program.features.length > 0 && (
                                                             <ul className="space-y-2">
@@ -145,11 +145,12 @@ export default function ProgramsPage() {
                                                             </ul>
                                                         )}
                                                         <Link href="/signup">
-                                                            <Button className="w-full bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg shadow-red-500/20 hover:shadow-red-500/30 transition-all">
-                                                                Get Started
-                                                            </Button>
+                                                            <Button
+                                                                className="w-full bg-gradient-to-r from-red-500 to-orange-500 text-white border-red-500 shadow-lg shadow-red-500/20"
+                                                                label="Get Started"
+                                                            />
                                                         </Link>
-                                                    </CardContent>
+                                                    </div>
                                                 </Card>
                                             </motion.div>
                                         </Reveal>
@@ -178,11 +179,10 @@ export default function ProgramsPage() {
                                 <Link href="/contact">
                                     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                                         <Button
-                                            size="lg"
-                                            className="bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg shadow-red-500/25 px-10 py-6 text-lg"
-                                        >
-                                            Book Free Consultation
-                                        </Button>
+                                            size="large"
+                                            className="bg-gradient-to-r from-red-500 to-orange-500 text-white border-red-500 shadow-lg shadow-red-500/25 px-10 py-3 text-lg"
+                                            label="Book Free Consultation"
+                                        />
                                     </motion.div>
                                 </Link>
                             </div>

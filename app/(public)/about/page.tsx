@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from 'primereact/card';
 import { Target, Heart, Zap, Award } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Reveal from '@/components/ui/Reveal';
@@ -47,8 +47,8 @@ export default function AboutPage() {
                     <div className="container mx-auto px-4 relative z-10">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-6xl mx-auto">
                             <Reveal direction="left">
-                                <Card className="group bg-gradient-to-br from-primary/10 to-transparent border-primary/20 hover:border-primary/40 transition-all duration-500 hover:shadow-lg hover:shadow-primary/10">
-                                    <CardContent className="p-8 space-y-4">
+                                <Card className="group !border-primary/20 hover:!border-primary/40 transition-all duration-500 hover:shadow-lg hover:shadow-primary/10 !bg-gradient-to-br !from-primary/10 !to-transparent">
+                                    <div className="p-8 space-y-4">
                                         <motion.div
                                             className="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500 to-orange-500 flex items-center justify-center"
                                             whileHover={{ scale: 1.1, rotate: 5 }}
@@ -62,13 +62,13 @@ export default function AboutPage() {
                                             state-of-the-art facilities, and a supportive community. We believe everyone
                                             deserves access to quality fitness resources and personalized attention.
                                         </p>
-                                    </CardContent>
+                                    </div>
                                 </Card>
                             </Reveal>
 
                             <Reveal direction="right">
-                                <Card className="group bg-gradient-to-br from-primary/10 to-transparent border-primary/20 hover:border-primary/40 transition-all duration-500 hover:shadow-lg hover:shadow-primary/10">
-                                    <CardContent className="p-8 space-y-4">
+                                <Card className="group !border-primary/20 hover:!border-primary/40 transition-all duration-500 hover:shadow-lg hover:shadow-primary/10 !bg-gradient-to-br !from-primary/10 !to-transparent">
+                                    <div className="p-8 space-y-4">
                                         <motion.div
                                             className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center"
                                             whileHover={{ scale: 1.1, rotate: 5 }}
@@ -82,7 +82,7 @@ export default function AboutPage() {
                                             builds a stronger community. We envision a world where fitness is accessible,
                                             enjoyable, and transformative for everyone.
                                         </p>
-                                    </CardContent>
+                                    </div>
                                 </Card>
                             </Reveal>
                         </div>
@@ -131,8 +131,8 @@ export default function AboutPage() {
                                     },
                                 ].map((item, index) => (
                                     <Reveal key={index} delay={index * 0.15} direction="up">
-                                        <Card className="group hover:border-primary/50 transition-all duration-500 hover:shadow-lg hover:shadow-primary/10 h-full">
-                                            <CardContent className="p-8 text-center space-y-5">
+                                        <Card className="group hover:!border-primary/50 transition-all duration-500 hover:shadow-lg hover:shadow-primary/10 h-full !border-border/50">
+                                            <div className="p-8 text-center space-y-5">
                                                 <motion.div
                                                     className={`w-16 h-16 rounded-xl bg-gradient-to-br ${item.gradient} flex items-center justify-center mx-auto`}
                                                     whileHover={{ scale: 1.15, rotate: 360 }}
@@ -142,7 +142,7 @@ export default function AboutPage() {
                                                 </motion.div>
                                                 <h3 className="text-xl font-bold">{item.title}</h3>
                                                 <p className="text-muted-foreground leading-relaxed">{item.description}</p>
-                                            </CardContent>
+                                            </div>
                                         </Card>
                                     </Reveal>
                                 ))}
@@ -194,8 +194,8 @@ export default function AboutPage() {
                                     },
                                 ].map((item, index) => (
                                     <Reveal key={index} delay={index * 0.1} direction={index % 2 === 0 ? 'left' : 'right'}>
-                                        <Card className="group hover:border-primary/50 transition-all duration-500 hover:shadow-lg hover:shadow-primary/10">
-                                            <CardContent className="p-6 space-y-3">
+                                        <Card className="group hover:!border-primary/50 transition-all duration-500 hover:shadow-lg hover:shadow-primary/10 !border-border/50">
+                                            <div className="p-6 space-y-3">
                                                 <motion.span
                                                     className="text-3xl block"
                                                     whileHover={{ scale: 1.2 }}
@@ -205,7 +205,7 @@ export default function AboutPage() {
                                                 </motion.span>
                                                 <h3 className="text-lg font-bold group-hover:text-primary transition-colors">{item.title}</h3>
                                                 <p className="text-muted-foreground leading-relaxed">{item.description}</p>
-                                            </CardContent>
+                                            </div>
                                         </Card>
                                     </Reveal>
                                 ))}

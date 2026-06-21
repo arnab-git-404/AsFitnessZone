@@ -1,20 +1,29 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
+import { Avatar } from 'primereact/avatar';
+import { Toast } from 'primereact/toast';
 import { Dumbbell, User, LogOut, Upload, ArrowLeft } from 'lucide-react';
-import { toast } from 'sonner';
 import type { UserResponse } from '@/lib/types';
+
+const fitnessGoalOptions = [
+    { label: 'Fat Loss', value: 'fat-loss' },
+    { label: 'Muscle Gain', value: 'muscle-gain' },
+    { label: 'General Fitness', value: 'general-fitness' },
+    { label: 'Strength', value: 'strength' },
+    { label: 'Endurance', value: 'endurance' },
+    { label: 'Flexibility', value: 'flexibility' },
+];
 
 export default function UserProfile() {
     const router = useRouter();
+    const toastRef = useRef<Toast>(null);
     const [user, setUser] = useState<UserResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -56,7 +65,7 @@ export default function UserProfile() {
             } else {
                 router.push('/login');
             }
-        } catch (error) {
+        } catch {
             router.push('/login');
         } finally {
             setIsLoading(false);
@@ -75,16 +84,14 @@ export default function UserProfile() {
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // Validate file size (max 5MB)
         if (file.size > 5 * 1024 * 1024) {
-            toast.error('Image size must be less than 5MB');
+            toastRef.current?.show({ severity: 'error', summary: 'Image size must be less than 5MB' });
             return;
         }
 
         setIsUploading(true);
 
         try {
-            // Get upload signature
             const signatureResponse = await fetch('/api/upload', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -97,7 +104,6 @@ export default function UserProfile() {
 
             const uploadData = await signatureResponse.json();
 
-            // Upload to Cloudinary
             const formDataUpload = new FormData();
             formDataUpload.append('file', file);
             formDataUpload.append('api_key', uploadData.apiKey);
@@ -110,10 +116,7 @@ export default function UserProfile() {
 
             const cloudinaryResponse = await fetch(
                 `https://api.cloudinary.com/v1_1/${uploadData.cloudName}/image/upload`,
-                {
-                    method: 'POST',
-                    body: formDataUpload,
-                }
+                { method: 'POST', body: formDataUpload }
             );
 
             if (!cloudinaryResponse.ok) {
@@ -122,10 +125,9 @@ export default function UserProfile() {
 
             const cloudinaryData = await cloudinaryResponse.json();
             setFormData({ ...formData, profileImage: cloudinaryData.secure_url });
-            toast.success('Image uploaded successfully');
-        } catch (error) {
-            console.error('Upload error:', error);
-            toast.error('Failed to upload image');
+            toastRef.current?.show({ severity: 'success', summary: 'Image uploaded successfully' });
+        } catch {
+            toastRef.current?.show({ severity: 'error', summary: 'Failed to upload image' });
         } finally {
             setIsUploading(false);
         }
@@ -152,14 +154,14 @@ export default function UserProfile() {
             });
 
             if (response.ok) {
-                toast.success('Profile updated successfully');
+                toastRef.current?.show({ severity: 'success', summary: 'Profile updated successfully' });
                 fetchUser();
             } else {
                 const data = await response.json();
-                toast.error(data.error || 'Failed to update profile');
+                toastRef.current?.show({ severity: 'error', summary: data.error || 'Failed to update profile' });
             }
-        } catch (error) {
-            toast.error('Something went wrong');
+        } catch {
+            toastRef.current?.show({ severity: 'error', summary: 'Something went wrong' });
         } finally {
             setIsSaving(false);
         }
@@ -168,10 +170,10 @@ export default function UserProfile() {
     const handleLogout = async () => {
         try {
             await fetch('/api/auth/logout', { method: 'POST' });
-            toast.success('Logged out successfully');
+            toastRef.current?.show({ severity: 'success', summary: 'Logged out successfully' });
             router.push('/');
-        } catch (error) {
-            toast.error('Logout failed');
+        } catch {
+            toastRef.current?.show({ severity: 'error', summary: 'Logout failed' });
         }
     };
 
@@ -188,12 +190,13 @@ export default function UserProfile() {
 
     return (
         <div className="min-h-screen bg-background">
+            <Toast ref={toastRef} />
             {/* Header */}
             <header className="border-b border-border bg-card">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <Link href="/" className="flex items-center space-x-2">
                         <div className="rounded-lg bg-primary p-2">
-                            <Dumbbell className="h-6 w-6 text-primary-foreground" />
+                            <Dumbbell className="h-6 w-6 text-white" />
                         </div>
                         <span className="text-xl font-bold bg-gradient-to-r from-primary to-red-400 bg-clip-text text-transparent">
                             FitnessGym
@@ -201,15 +204,9 @@ export default function UserProfile() {
                     </Link>
                     <div className="flex items-center space-x-4">
                         <Link href="/user/dashboard">
-                            <Button variant="ghost">
-                                <ArrowLeft className="h-4 w-4 mr-2" />
-                                Dashboard
-                            </Button>
+                            <Button className="p-button-text"><ArrowLeft className="h-4 w-4 mr-2" />Dashboard</Button>
                         </Link>
-                        <Button variant="ghost" onClick={handleLogout}>
-                            <LogOut className="h-4 w-4 mr-2" />
-                            Logout
-                        </Button>
+                        <Button className="p-button-text" onClick={handleLogout}><LogOut className="h-4 w-4 mr-2" />Logout</Button>
                     </div>
                 </div>
             </header>
@@ -228,25 +225,23 @@ export default function UserProfile() {
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Profile Image */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Profile Picture</CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-4">
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <h2 className="text-lg font-semibold mb-4">Profile Picture</h2>
                                 <div className="flex items-center space-x-6">
-                                    <Avatar className="h-24 w-24">
-                                        <AvatarImage src={formData.profileImage} />
-                                        <AvatarFallback className="bg-primary/10 text-primary text-2xl">
-                                            {formData.name.charAt(0).toUpperCase()}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                    <Avatar
+                                        image={formData.profileImage || undefined}
+                                        label={formData.name ? formData.name.charAt(0).toUpperCase() : 'U'}
+                                        className="w-24 h-24"
+                                        style={{ backgroundColor: 'var(--p-primary-100)', color: 'var(--p-primary-700)', fontSize: '1.5rem' }}
+                                    />
                                     <div className="space-y-2">
-                                        <Label htmlFor="profileImage" className="cursor-pointer">
+                                        <label htmlFor="profileImage" className="cursor-pointer">
                                             <div className="flex items-center space-x-2 px-4 py-2 bg-secondary rounded-md hover:bg-secondary/80 transition-colors">
                                                 <Upload className="h-4 w-4" />
                                                 <span>{isUploading ? 'Uploading...' : 'Upload Image'}</span>
                                             </div>
-                                            <Input
+                                            <input
                                                 id="profileImage"
                                                 type="file"
                                                 accept="image/*"
@@ -254,151 +249,148 @@ export default function UserProfile() {
                                                 className="hidden"
                                                 disabled={isUploading}
                                             />
-                                        </Label>
+                                        </label>
                                         <p className="text-xs text-muted-foreground">
                                             JPG, PNG or GIF. Max size 5MB.
                                         </p>
                                     </div>
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
 
                         {/* Personal Information */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Personal Information</CardTitle>
-                            </CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="name">Full Name *</Label>
-                                    <Input
-                                        id="name"
-                                        name="name"
-                                        value={formData.name}
-                                        onChange={handleChange}
-                                        required
-                                    />
-                                </div>
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <h2 className="text-lg font-semibold mb-4">Personal Information</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium" htmlFor="name">Full Name *</label>
+                                        <InputText
+                                            id="name"
+                                            name="name"
+                                            value={formData.name}
+                                            onChange={handleChange}
+                                            required
+                                            className="w-full"
+                                        />
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="email">Email *</Label>
-                                    <Input
-                                        id="email"
-                                        name="email"
-                                        type="email"
-                                        value={formData.email}
-                                        disabled
-                                        className="bg-muted"
-                                    />
-                                    <p className="text-xs text-muted-foreground">Email cannot be changed</p>
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium" htmlFor="email">Email *</label>
+                                        <InputText
+                                            id="email"
+                                            name="email"
+                                            type="email"
+                                            value={formData.email}
+                                            disabled
+                                            className="w-full !bg-muted"
+                                        />
+                                        <p className="text-xs text-muted-foreground">Email cannot be changed</p>
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="phone">Phone</Label>
-                                    <Input
-                                        id="phone"
-                                        name="phone"
-                                        type="tel"
-                                        value={formData.phone}
-                                        onChange={handleChange}
-                                        placeholder="+1 (555) 123-4567"
-                                    />
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium" htmlFor="phone">Phone</label>
+                                        <InputText
+                                            id="phone"
+                                            name="phone"
+                                            type="tel"
+                                            value={formData.phone}
+                                            onChange={handleChange}
+                                            placeholder="+1 (555) 123-4567"
+                                            className="w-full"
+                                        />
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="age">Age</Label>
-                                    <Input
-                                        id="age"
-                                        name="age"
-                                        type="number"
-                                        min="10"
-                                        max="100"
-                                        value={formData.age}
-                                        onChange={handleChange}
-                                        placeholder="25"
-                                    />
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium" htmlFor="age">Age</label>
+                                        <InputText
+                                            id="age"
+                                            name="age"
+                                            type="number"
+                                            min="10"
+                                            max="100"
+                                            value={formData.age}
+                                            onChange={handleChange}
+                                            placeholder="25"
+                                            className="w-full"
+                                        />
+                                    </div>
 
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="address">Address</Label>
-                                    <Input
-                                        id="address"
-                                        name="address"
-                                        value={formData.address}
-                                        onChange={handleChange}
-                                        placeholder="123 Main St, City, State, ZIP"
-                                    />
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-sm font-medium" htmlFor="address">Address</label>
+                                        <InputText
+                                            id="address"
+                                            name="address"
+                                            value={formData.address}
+                                            onChange={handleChange}
+                                            placeholder="123 Main St, City, State, ZIP"
+                                            className="w-full"
+                                        />
+                                    </div>
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
 
                         {/* Fitness Details */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Fitness Details</CardTitle>
-                            </CardHeader>
-                            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-2">
-                                    <Label htmlFor="weight">Weight (kg)</Label>
-                                    <Input
-                                        id="weight"
-                                        name="weight"
-                                        type="number"
-                                        step="0.1"
-                                        min="20"
-                                        value={formData.weight}
-                                        onChange={handleChange}
-                                        placeholder="70.5"
-                                    />
-                                </div>
+                        <Card className="!border-border/50">
+                            <div className="p-6">
+                                <h2 className="text-lg font-semibold mb-4">Fitness Details</h2>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium" htmlFor="weight">Weight (kg)</label>
+                                        <InputText
+                                            id="weight"
+                                            name="weight"
+                                            type="number"
+                                            step="0.1"
+                                            min="20"
+                                            value={formData.weight}
+                                            onChange={handleChange}
+                                            placeholder="70.5"
+                                            className="w-full"
+                                        />
+                                    </div>
 
-                                <div className="space-y-2">
-                                    <Label htmlFor="height">Height (cm)</Label>
-                                    <Input
-                                        id="height"
-                                        name="height"
-                                        type="number"
-                                        step="0.1"
-                                        min="50"
-                                        value={formData.height}
-                                        onChange={handleChange}
-                                        placeholder="175"
-                                    />
-                                </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium" htmlFor="height">Height (cm)</label>
+                                        <InputText
+                                            id="height"
+                                            name="height"
+                                            type="number"
+                                            step="0.1"
+                                            min="50"
+                                            value={formData.height}
+                                            onChange={handleChange}
+                                            placeholder="175"
+                                            className="w-full"
+                                        />
+                                    </div>
 
-                                <div className="space-y-2 md:col-span-2">
-                                    <Label htmlFor="fitnessGoal">Fitness Goal</Label>
-                                    <Select value={formData.fitnessGoal} onValueChange={handleSelectChange}>
-                                        <SelectTrigger>
-                                            <SelectValue placeholder="Select your fitness goal" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="fat-loss">Fat Loss</SelectItem>
-                                            <SelectItem value="muscle-gain">Muscle Gain</SelectItem>
-                                            <SelectItem value="general-fitness">General Fitness</SelectItem>
-                                            <SelectItem value="strength">Strength</SelectItem>
-                                            <SelectItem value="endurance">Endurance</SelectItem>
-                                            <SelectItem value="flexibility">Flexibility</SelectItem>
-                                        </SelectContent>
-                                    </Select>
+                                    <div className="space-y-2 md:col-span-2">
+                                        <label className="text-sm font-medium">Fitness Goal</label>
+                                        <Dropdown
+                                            value={formData.fitnessGoal}
+                                            options={fitnessGoalOptions}
+                                            onChange={e => handleSelectChange(e.value)}
+                                            placeholder="Select your fitness goal"
+                                            className="w-full"
+                                        />
+                                    </div>
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
 
                         {/* Submit Button */}
                         <div className="flex justify-end space-x-4">
                             <Link href="/user/dashboard">
-                                <Button type="button" variant="outline">
-                                    Cancel
-                                </Button>
+                                <Button className="p-button-outlined" label="Cancel" />
                             </Link>
                             <Button
                                 type="submit"
-                                className="bg-primary hover:bg-primary/90"
+                                className="bg-primary border-primary text-white"
+                                label={isSaving ? 'Saving...' : 'Save Changes'}
                                 disabled={isSaving}
-                            >
-                                {isSaving ? 'Saving...' : 'Save Changes'}
-                            </Button>
+                            />
                         </div>
                     </form>
                 </div>

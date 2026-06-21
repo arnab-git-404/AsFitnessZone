@@ -4,6 +4,8 @@ export interface RoleResponse {
   _id: string;
   name: string;
   description: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface UserResponse {
@@ -11,6 +13,7 @@ export interface UserResponse {
   email: string;
   userType: "gymMember" | "admin" | "trainer";
   role: RoleResponse | string;
+  isActive?: boolean;
   createdAt: string;
   updatedAt: string;
   customer?: CustomerResponse;
@@ -163,6 +166,7 @@ export interface MediaResponse {
   url: string;
   publicId: string;
   category: string;
+  order: number;
   uploadedBy: string;
   createdAt: string;
   updatedAt: string;

@@ -101,7 +101,7 @@ const _PUT = async (
 
 export const PUT = withActivityLog('update_trainer', _PUT);
 
-const _DELETE = async (
+const _PATCH = async (
     request: NextRequest,
     { params }: { params: Promise<{ id: string }> }
 ) => {
@@ -113,17 +113,37 @@ const _DELETE = async (
 
         await connectDB();
         const { id } = await params;
-        const trainer = await Trainer.findByIdAndDelete(id);
+        const body = await request.json();
 
-        if (!trainer) {
-            return NextResponse.json({ error: 'Trainer not found' }, { status: 404 });
+        if (body.isActive !== undefined) {
+            const trainer = await Trainer.findByIdAndUpdate(
+                id,
+                { isActive: Boolean(body.isActive) },
+                { new: true }
+            ).populate('userId', 'email');
+
+            if (!trainer) {
+                return NextResponse.json({ error: 'Trainer not found' }, { status: 404 });
+            }
+
+            const obj = trainer.toObject();
+            const enriched = {
+                ...obj,
+                userEmail: (obj.userId as any)?.email || '',
+                userId: (obj.userId as any)?._id?.toString() || obj.userId,
+            };
+
+            return NextResponse.json({
+                message: body.isActive ? 'Trainer activated' : 'Trainer deactivated',
+                trainer: enriched,
+            });
         }
 
-        return NextResponse.json({ message: 'Trainer deleted successfully' }, { status: 200 });
+        return NextResponse.json({ error: 'isActive field is required' }, { status: 400 });
     } catch (error: any) {
-        console.error('Delete trainer error:', error);
+        console.error('Toggle trainer status error:', error);
         return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
 };
 
-export const DELETE = withActivityLog('delete_trainer', _DELETE);
+export const PATCH = withActivityLog('toggle_trainer_status', _PATCH);

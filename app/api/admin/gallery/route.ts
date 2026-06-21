@@ -12,7 +12,10 @@ const _GET = async (request: NextRequest) => {
         }
 
         await connectDB();
-        const mediaItems = await Media.find().sort({ createdAt: -1 }).populate('uploadedBy', 'name email');
+        // Sort by order first, then by creation date as fallback
+        const mediaItems = await Media.find()
+            .sort({ order: 1, createdAt: -1 })
+            .populate('uploadedBy', 'name email');
 
         return NextResponse.json({ mediaItems }, { status: 200 });
     } catch (error: any) {
@@ -41,11 +44,19 @@ const _POST = async (request: NextRequest) => {
             );
         }
 
+        // Auto-assign order: next number within the same category
+        const lastInCategory = await Media.findOne({ category: category || 'general' })
+            .sort({ order: -1 })
+            .select('order');
+
+        const nextOrder = (lastInCategory?.order ?? 0) + 1;
+
         const media = await Media.create({
             type,
             url,
             publicId,
             category: category || 'general',
+            order: nextOrder,
             uploadedBy: tokenPayload.userId,
         });
 

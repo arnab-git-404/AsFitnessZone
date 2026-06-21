@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
+import { Button } from "primereact/button";
 import { Dumbbell } from "lucide-react";
 import Link from "next/link";
 
@@ -22,11 +22,11 @@ export default function UserError({
           An error occurred in your dashboard. Please try again.
         </p>
         <div className="flex gap-4 justify-center">
-          <Button onClick={reset} variant="default">
+          <Button onClick={reset} className="bg-primary border-primary text-white">
             Try Again
           </Button>
           <Link href="/user/dashboard">
-            <Button variant="outline">Dashboard</Button>
+            <Button className="p-button-outlined">Dashboard</Button>
           </Link>
         </div>
       </div>

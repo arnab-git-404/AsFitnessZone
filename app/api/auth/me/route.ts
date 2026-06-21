@@ -5,6 +5,7 @@ import Customer from '@/lib/db/models/customer.model';
 import Trainer from '@/lib/db/models/trainer.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
 import { withActivityLog } from '@/lib/activityLogger';
+import Role from '@/lib/db/models/role.model';
 
 const _GET = async (request: NextRequest) => {
     try {
@@ -21,7 +22,10 @@ const _GET = async (request: NextRequest) => {
 
         const user = await User.findById(tokenPayload.userId)
             .select('-password')
-            .populate('role', 'name');
+            .populate({
+  path: "role",
+  model: Role,
+})
         if (!user) {
             return NextResponse.json(
                 { error: 'User not found' },

@@ -1,28 +1,40 @@
 'use client';
 
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
 import { Dumbbell, Ruler, Weight, Activity, Info } from 'lucide-react';
 
 type Gender = 'male' | 'female';
 type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very-active';
 
-const activityMultipliers: Record<ActivityLevel, { label: string; value: number }> = {
-    'sedentary': { label: 'Sedentary (little or no exercise)', value: 1.2 },
-    'light': { label: 'Light (1-3 days/week)', value: 1.375 },
-    'moderate': { label: 'Moderate (3-5 days/week)', value: 1.55 },
-    'active': { label: 'Active (6-7 days/week)', value: 1.725 },
-    'very-active': { label: 'Very Active (twice/day)', value: 1.9 },
+const genderOptions = [
+    { label: 'Male', value: 'male' },
+    { label: 'Female', value: 'female' },
+];
+
+const activityOptions = [
+    { label: 'Sedentary (little or no exercise)', value: 'sedentary' },
+    { label: 'Light (1-3 days/week)', value: 'light' },
+    { label: 'Moderate (3-5 days/week)', value: 'moderate' },
+    { label: 'Active (6-7 days/week)', value: 'active' },
+    { label: 'Very Active (twice/day)', value: 'very-active' },
+];
+
+const activityMultipliers: Record<ActivityLevel, number> = {
+    'sedentary': 1.2,
+    'light': 1.375,
+    'moderate': 1.55,
+    'active': 1.725,
+    'very-active': 1.9,
 };
 
 export default function BMICalculatorPage() {
-    const [height, setHeight] = useState<number | ''>('');
-    const [weight, setWeight] = useState<number | ''>('');
-    const [age, setAge] = useState<number | ''>('');
+    const [height, setHeight] = useState<string>('');
+    const [weight, setWeight] = useState<string>('');
+    const [age, setAge] = useState<string>('');
     const [gender, setGender] = useState<Gender>('male');
     const [activity, setActivity] = useState<ActivityLevel>('sedentary');
     const [results, setResults] = useState<{
@@ -37,18 +49,22 @@ export default function BMICalculatorPage() {
     const calculate = () => {
         if (!height || !weight || !age) return;
 
+        const h = parseFloat(height);
+        const w = parseFloat(weight);
+        const a = parseInt(age, 10);
+        if (isNaN(h) || isNaN(w) || isNaN(a)) return;
+
         let heightM: number;
         let weightKg: number;
 
         if (unit === 'metric') {
-            heightM = Number(height) / 100;
-            weightKg = Number(weight);
+            heightM = h / 100;
+            weightKg = w;
         } else {
-            heightM = Number(height) * 0.0254;
-            weightKg = Number(weight) * 0.453592;
+            heightM = h * 0.0254;
+            weightKg = w * 0.453592;
         }
 
-        // BMI
         const bmi = weightKg / (heightM * heightM);
         const roundedBmi = Math.round(bmi * 10) / 10;
 
@@ -69,16 +85,15 @@ export default function BMICalculatorPage() {
             categoryColor = 'text-red-500';
         }
 
-        // Mifflin-St Jeor BMR
         let bmr: number;
         if (gender === 'male') {
-            bmr = 10 * weightKg + 6.25 * (heightM * 100) - 5 * Number(age) + 5;
+            bmr = 10 * weightKg + 6.25 * (heightM * 100) - 5 * a + 5;
         } else {
-            bmr = 10 * weightKg + 6.25 * (heightM * 100) - 5 * Number(age) - 161;
+            bmr = 10 * weightKg + 6.25 * (heightM * 100) - 5 * a - 161;
         }
 
         const roundedBmr = Math.round(bmr);
-        const tdee = Math.round(bmr * activityMultipliers[activity].value);
+        const tdee = Math.round(bmr * activityMultipliers[activity]);
 
         setResults({
             bmi: roundedBmi,
@@ -109,64 +124,53 @@ export default function BMICalculatorPage() {
                 <div className="container mx-auto px-4">
                     <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
                         {/* Input Card */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                        <Card className="!border-border/50">
+                            <div className="p-6 space-y-5">
+                                <h2 className="flex items-center gap-2 text-lg font-semibold">
                                     <Activity className="h-5 w-5 text-primary" />
                                     Your Details
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-5">
+                                </h2>
+
                                 {/* Unit Toggle */}
                                 <div className="flex gap-2">
                                     <Button
-                                        variant={unit === 'metric' ? 'default' : 'outline'}
-                                        size="sm"
+                                        className={unit === 'metric' ? 'bg-primary text-white border-primary' : 'p-button-outlined'}
+                                        size="small"
                                         onClick={() => setUnit('metric')}
-                                        className={unit === 'metric' ? 'bg-primary' : ''}
-                                    >
-                                        Metric (cm / kg)
-                                    </Button>
+                                        label="Metric (cm / kg)"
+                                    />
                                     <Button
-                                        variant={unit === 'imperial' ? 'default' : 'outline'}
-                                        size="sm"
+                                        className={unit === 'imperial' ? 'bg-primary text-white border-primary' : 'p-button-outlined'}
+                                        size="small"
                                         onClick={() => setUnit('imperial')}
-                                        className={unit === 'imperial' ? 'bg-primary' : ''}
-                                    >
-                                        Imperial (in / lbs)
-                                    </Button>
+                                        label="Imperial (in / lbs)"
+                                    />
                                 </div>
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="height">
-                                            {unit === 'metric' ? 'Height (cm)' : 'Height (in)'}
-                                        </Label>
+                                        <label className="text-sm font-medium">{unit === 'metric' ? 'Height (cm)' : 'Height (in)'}</label>
                                         <div className="relative">
-                                            <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                id="height"
+                                            <Ruler className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                            <InputText
                                                 type="number"
                                                 value={height}
-                                                onChange={(e) => setHeight(e.target.value ? Number(e.target.value) : '')}
+                                                onChange={(e) => setHeight(e.target.value)}
                                                 placeholder={unit === 'metric' ? '170' : '67'}
-                                                className="pl-10"
+                                                className="w-full pl-10"
                                             />
                                         </div>
                                     </div>
                                     <div className="space-y-2">
-                                        <Label htmlFor="weight">
-                                            {unit === 'metric' ? 'Weight (kg)' : 'Weight (lbs)'}
-                                        </Label>
+                                        <label className="text-sm font-medium">{unit === 'metric' ? 'Weight (kg)' : 'Weight (lbs)'}</label>
                                         <div className="relative">
-                                            <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                            <Input
-                                                id="weight"
+                                            <Weight className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                                            <InputText
                                                 type="number"
                                                 value={weight}
-                                                onChange={(e) => setWeight(e.target.value ? Number(e.target.value) : '')}
+                                                onChange={(e) => setWeight(e.target.value)}
                                                 placeholder={unit === 'metric' ? '70' : '154'}
-                                                className="pl-10"
+                                                className="w-full pl-10"
                                             />
                                         </div>
                                     </div>
@@ -174,65 +178,54 @@ export default function BMICalculatorPage() {
 
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="space-y-2">
-                                        <Label htmlFor="age">Age</Label>
-                                        <Input
-                                            id="age"
+                                        <label className="text-sm font-medium">Age</label>
+                                        <InputText
                                             type="number"
                                             value={age}
-                                            onChange={(e) => setAge(e.target.value ? Number(e.target.value) : '')}
+                                            onChange={(e) => setAge(e.target.value)}
                                             placeholder="25"
-                                            min={10}
-                                            max={120}
+                                            className="w-full"
                                         />
                                     </div>
                                     <div className="space-y-2">
-                                        <Label>Gender</Label>
-                                        <Select value={gender} onValueChange={(v) => setGender(v as Gender)}>
-                                            <SelectTrigger>
-                                                <SelectValue />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="male">Male</SelectItem>
-                                                <SelectItem value="female">Female</SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                        <label className="text-sm font-medium">Gender</label>
+                                        <Dropdown
+                                            value={gender}
+                                            options={genderOptions}
+                                            onChange={(e) => setGender(e.value)}
+                                            className="w-full"
+                                        />
                                     </div>
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label>Activity Level</Label>
-                                    <Select value={activity} onValueChange={(v) => setActivity(v as ActivityLevel)}>
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            {Object.entries(activityMultipliers).map(([key, val]) => (
-                                                <SelectItem key={key} value={key}>{val.label}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                    <label className="text-sm font-medium">Activity Level</label>
+                                    <Dropdown
+                                        value={activity}
+                                        options={activityOptions}
+                                        onChange={(e) => setActivity(e.value)}
+                                        className="w-full"
+                                    />
                                 </div>
 
                                 <Button
-                                    className="w-full bg-primary hover:bg-primary/90"
-                                    size="lg"
+                                    className="w-full bg-primary text-white border-primary"
+                                    size="large"
                                     onClick={calculate}
                                     disabled={!height || !weight || !age}
-                                >
-                                    Calculate
-                                </Button>
-                            </CardContent>
+                                    label="Calculate"
+                                />
+                            </div>
                         </Card>
 
                         {/* Results Card */}
-                        <Card>
-                            <CardHeader>
-                                <CardTitle className="flex items-center gap-2">
+                        <Card className="!border-border/50">
+                            <div className="p-6 space-y-6">
+                                <h2 className="flex items-center gap-2 text-lg font-semibold">
                                     <Info className="h-5 w-5 text-primary" />
                                     Your Results
-                                </CardTitle>
-                            </CardHeader>
-                            <CardContent className="space-y-6">
+                                </h2>
+
                                 {results ? (
                                     <>
                                         {/* BMI */}
@@ -248,10 +241,10 @@ export default function BMICalculatorPage() {
                                         <div className="space-y-2">
                                             <p className="text-sm font-medium">BMI Scale</p>
                                             <div className="h-3 rounded-full overflow-hidden flex">
-                                                <div className="flex-1 bg-blue-400" title="Underweight" />
-                                                <div className="flex-1 bg-green-500" title="Normal" />
-                                                <div className="flex-1 bg-yellow-500" title="Overweight" />
-                                                <div className="flex-1 bg-red-500" title="Obese" />
+                                                <div className="flex-1 bg-blue-400" />
+                                                <div className="flex-1 bg-green-500" />
+                                                <div className="flex-1 bg-yellow-500" />
+                                                <div className="flex-1 bg-red-500" />
                                             </div>
                                             <div className="flex justify-between text-xs text-muted-foreground">
                                                 <span>18.5</span>
@@ -286,7 +279,7 @@ export default function BMICalculatorPage() {
                                         <p>Enter your details and click Calculate to see your results.</p>
                                     </div>
                                 )}
-                            </CardContent>
+                            </div>
                         </Card>
                     </div>
                 </div>

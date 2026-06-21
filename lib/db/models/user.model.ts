@@ -6,6 +6,7 @@ export interface IUser {
     password: string;
     userType: 'gymMember' | 'admin' | 'trainer';
     role: mongoose.Types.ObjectId;
+    isActive: boolean;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -36,12 +37,16 @@ const UserSchema = new Schema<IUser>(
             required: [true, 'Role is required'],
             index: true,
         },
+        isActive: {
+            type: Boolean,
+            default: true,
+        },
     },
     {
         timestamps: true,
     }
 );
 
-const User = models.User || model<IUser>('User', UserSchema);
+const User = models.User || model("User", UserSchema);
 
 export default User;

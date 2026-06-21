@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { CheckCircle2, ArrowRight, Sparkles } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Button } from 'primereact/button';
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import Reveal from '@/components/ui/Reveal';
@@ -10,11 +10,9 @@ import Reveal from '@/components/ui/Reveal';
 export default function CTA() {
     return (
         <section className="relative py-28 overflow-hidden">
-            {/* Animated background */}
             <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-primary/5 to-gray-900" />
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-red-500/10 via-transparent to-transparent" />
 
-            {/* Floating orbs */}
             <motion.div
                 className="absolute top-20 right-20 w-72 h-72 rounded-full bg-red-500/5 blur-3xl"
                 animate={{ y: [0, -30, 0], opacity: [0.3, 0.5, 0.3] }}
@@ -33,7 +31,6 @@ export default function CTA() {
                         whileHover={{ scale: 1.01 }}
                         transition={{ duration: 0.3 }}
                     >
-                        {/* Badge */}
                         <motion.div
                             className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 backdrop-blur-sm px-4 py-2"
                             whileHover={{ scale: 1.05 }}
@@ -55,7 +52,6 @@ export default function CTA() {
                             Limited time offer for new members!
                         </p>
 
-                        {/* CTA Buttons */}
                         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
                             <Link href="/signup">
                                 <motion.div
@@ -63,11 +59,11 @@ export default function CTA() {
                                     whileTap={{ scale: 0.95 }}
                                 >
                                     <Button
-                                        size="lg"
-                                        className="text-lg px-10 py-6 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white shadow-lg shadow-red-500/25 hover:shadow-red-500/40 transition-all duration-300 group"
+                                        size="large"
+                                        className="text-lg px-10 py-3 bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg shadow-red-500/25"
                                     >
                                         Join Now
-                                        <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                        <ArrowRight className="ml-2 h-5 w-5" />
                                     </Button>
                                 </motion.div>
                             </Link>
@@ -77,9 +73,8 @@ export default function CTA() {
                                     whileTap={{ scale: 0.95 }}
                                 >
                                     <Button
-                                        size="lg"
-                                        variant="outline"
-                                        className="text-lg px-10 py-6 border-gray-600 text-gray-300 hover:bg-white/5 hover:border-gray-500"
+                                        size="large"
+                                        className="text-lg px-10 py-3 border-gray-600 text-gray-300 hover:bg-white/5 hover:border-gray-500 bg-transparent"
                                     >
                                         Free Consultation
                                     </Button>
@@ -87,7 +82,6 @@ export default function CTA() {
                             </Link>
                         </div>
 
-                        {/* Benefits */}
                         <div className="flex flex-wrap justify-center gap-x-8 gap-y-3 pt-6">
                             {['No Joining Fee', 'Cancel Anytime', 'Free Trial Session', 'All Equipment Access'].map(
                                 (benefit, index) => (

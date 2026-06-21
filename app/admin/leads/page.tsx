@@ -1,19 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dumbbell, MessageSquare, LogOut, LayoutDashboard, Users, CalendarCheck, Image as ImageIcon, UserCog, UserPlus, Activity } from 'lucide-react';
-import { toast } from 'sonner';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column';
+import { Dropdown } from 'primereact/dropdown';
+import { Toast } from 'primereact/toast';
+import { Dumbbell, MessageSquare, LogOut, LayoutDashboard, Users, CalendarCheck, Image as ImageIcon, UserCog, UserPlus, Activity, Shield } from 'lucide-react';
 import type { UserResponse, LeadResponse } from '@/lib/types';
+
+const statusOptions = [
+    { label: 'New', value: 'new' },
+    { label: 'Contacted', value: 'contacted' },
+    { label: 'Converted', value: 'converted' },
+    { label: 'Closed', value: 'closed' },
+];
 
 export default function AdminLeads() {
     const router = useRouter();
+    const toastRef = useRef<Toast>(null);
     const [user, setUser] = useState<UserResponse | null>(null);
     const [leads, setLeads] = useState<LeadResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -28,19 +36,11 @@ export default function AdminLeads() {
             const response = await fetch('/api/auth/me');
             if (response.ok) {
                 const data = await response.json();
-                if (data.user.userType !== 'admin') {
-                    router.push('/user/dashboard');
-                    return;
-                }
+                if (data.user.userType !== 'admin') { router.push('/user/dashboard'); return; }
                 setUser(data.user);
-            } else {
-                router.push('/login');
-            }
-        } catch (error) {
-            router.push('/login');
-        } finally {
-            setIsLoading(false);
-        }
+            } else { router.push('/login'); }
+        } catch { router.push('/login'); }
+        finally { setIsLoading(false); }
     };
 
     const fetchLeads = async () => {
@@ -50,9 +50,7 @@ export default function AdminLeads() {
                 const data = await response.json();
                 setLeads(data.leads);
             }
-        } catch (error) {
-            toast.error('Failed to fetch leads');
-        }
+        } catch { toastRef.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to fetch leads' }); }
     };
 
     const handleStatusChange = async (leadId: string, newStatus: string) => {
@@ -62,42 +60,29 @@ export default function AdminLeads() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: newStatus }),
             });
-
             if (response.ok) {
-                toast.success('Lead status updated');
+                toastRef.current?.show({ severity: 'success', summary: 'Updated', detail: 'Lead status updated' });
                 fetchLeads();
-            } else {
-                toast.error('Failed to update status');
-            }
-        } catch (error) {
-            toast.error('Something went wrong');
-        }
+            } else { toastRef.current?.show({ severity: 'error', summary: 'Error', detail: 'Failed to update status' }); }
+        } catch { toastRef.current?.show({ severity: 'error', summary: 'Error', detail: 'Something went wrong' }); }
     };
 
     const handleLogout = async () => {
-        try {
-            await fetch('/api/auth/logout', { method: 'POST' });
-            toast.success('Logged out successfully');
-            router.push('/');
-        } catch (error) {
-            toast.error('Logout failed');
-        }
+        await fetch('/api/auth/logout', { method: 'POST' });
+        toastRef.current?.show({ severity: 'success', summary: 'Logged out', detail: 'Logged out successfully' });
+        router.push('/');
     };
 
-    const getStatusColor = (status: string) => {
-        switch (status) {
-            case 'new':
-                return 'default';
-            case 'contacted':
-                return 'secondary';
-            case 'converted':
-                return 'outline';
-            case 'closed':
-                return 'outline';
-            default:
-                return 'default';
-        }
-    };
+    const statusBodyTemplate = (row: LeadResponse) => (
+        <Dropdown
+            value={row.status}
+            options={statusOptions}
+            onChange={(e) => handleStatusChange(row._id, e.value)}
+            className="w-32"
+        />
+    );
+
+    const dateBodyTemplate = (row: LeadResponse) => new Date(row.createdAt).toLocaleDateString();
 
     if (isLoading) {
         return (
@@ -112,157 +97,53 @@ export default function AdminLeads() {
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Header */}
+            <Toast ref={toastRef} />
             <header className="border-b border-border bg-card">
                 <div className="container mx-auto px-4 py-4 flex items-center justify-between">
                     <Link href="/" className="flex items-center space-x-2">
-                        <div className="rounded-lg bg-primary p-2">
-                            <Dumbbell className="h-6 w-6 text-primary-foreground" />
-                        </div>
-                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-red-400 bg-clip-text text-transparent">
-                            FitnessGym Admin
-                        </span>
+                        <div className="rounded-lg bg-primary p-2"><Dumbbell className="h-6 w-6 text-white" /></div>
+                        <span className="text-xl font-bold bg-gradient-to-r from-primary to-red-400 bg-clip-text text-transparent">FitnessGym Admin</span>
                     </Link>
                     <div className="flex items-center space-x-4">
                         <span className="text-sm text-muted-foreground">Admin: {user?.customer?.name || user?.email}</span>
-                        <Button variant="ghost" onClick={handleLogout}>
-                            <LogOut className="h-4 w-4 mr-2" />
-                            Logout
-                        </Button>
+                        <Button className="p-button-text" onClick={handleLogout} label="Logout" icon="pi pi-sign-out" />
                     </div>
                 </div>
             </header>
 
             <div className="flex">
-                {/* Sidebar */}
                 <aside className="w-64 border-r border-border bg-card min-h-[calc(100vh-73px)]">
                     <nav className="p-4 space-y-2">
-                        <Link href="/admin/dashboard">
-                            <Button variant="ghost" className="w-full justify-start">
-                                <LayoutDashboard className="h-4 w-4 mr-2" />
-                                Dashboard
-                            </Button>
-                        </Link>
-                        <Link href="/admin/users">
-                            <Button variant="ghost" className="w-full justify-start">
-                                <Users className="h-4 w-4 mr-2" />
-                                Users
-                            </Button>
-                        </Link>
-                        <Link href="/admin/leads">
-                            <Button variant="default" className="w-full justify-start bg-primary">
-                                <MessageSquare className="h-4 w-4 mr-2" />
-                                Leads
-                            </Button>
-                        </Link>
-                        <Link href="/admin/programs">
-                            <Button variant="ghost" className="w-full justify-start">
-                                <Dumbbell className="h-4 w-4 mr-2" />
-                                Programs
-                            </Button>
-                        </Link>
-                        <Link href="/admin/trainers">
-                            <Button variant="ghost" className="w-full justify-start">
-                                <UserCog className="h-4 w-4 mr-2" />
-                                Trainers
-                            </Button>
-                        </Link>
-                        <Link href="/admin/trainer-assignments">
-                            <Button variant="ghost" className="w-full justify-start">
-                                <UserPlus className="h-4 w-4 mr-2" />
-                                Trainer Assign
-                            </Button>
-                        </Link>
-                        <Link href="/admin/gallery">
-                            <Button variant="ghost" className="w-full justify-start">
-                                <ImageIcon className="h-4 w-4 mr-2" />
-                                Gallery
-                            </Button>
-                        </Link>
-                        <Link href="/admin/activity-logs">
-                            <Button variant="ghost" className="w-full justify-start">
-                                <Activity className="h-4 w-4 mr-2" />
-                                Activity Logs
-                            </Button>
-                        </Link>
-                        <Link href="/admin/attendance">
-                            <Button variant="ghost" className="w-full justify-start">
-                                <CalendarCheck className="h-4 w-4 mr-2" />
-                                Attendance
-                            </Button>
-                        </Link>
+                        <Link href="/admin/dashboard"><Button className="w-full justify-start p-button-text" label="Dashboard" icon="pi pi-th-large" /></Link>
+                        <Link href="/admin/users"><Button className="w-full justify-start p-button-text" label="Users" icon="pi pi-users" /></Link>
+                        <Link href="/admin/leads"><Button className="w-full justify-start bg-primary border-primary text-white" label="Leads" icon="pi pi-comments" /></Link>
+                        <Link href="/admin/programs"><Button className="w-full justify-start p-button-text" label="Programs" icon="pi pi-star" /></Link>
+                        <Link href="/admin/trainers"><Button className="w-full justify-start p-button-text" label="Trainers" icon="pi pi-user-edit" /></Link>
+                        <Link href="/admin/roles"><Button className="w-full justify-start p-button-text" label="Roles" icon="pi pi-shield" /></Link>
+                        <Link href="/admin/gallery"><Button className="w-full justify-start p-button-text" label="Gallery" icon="pi pi-images" /></Link>
+                        <Link href="/admin/attendance"><Button className="w-full justify-start p-button-text" label="Attendance" icon="pi pi-calendar" /></Link>
+                        <Link href="/admin/activity-logs"><Button className="w-full justify-start p-button-text" label="Activity Logs" icon="pi pi-chart-bar" /></Link>
                     </nav>
                 </aside>
 
-                {/* Main Content */}
                 <main className="flex-1 p-8">
                     <div className="space-y-6">
                         <div>
-                            <h1 className="text-3xl font-bold mb-2">
-                                Contact <span className="text-primary">Leads</span>
-                            </h1>
-                            <p className="text-muted-foreground">
-                                Manage and track contact form submissions
-                            </p>
+                            <h1 className="text-3xl font-bold mb-2">Contact <span className="text-primary">Leads</span></h1>
+                            <p className="text-muted-foreground">Manage and track contact form submissions</p>
                         </div>
 
-                        <Card>
-                            <CardHeader>
-                                <div className="text-sm text-muted-foreground">
-                                    Total Leads: {leads.length}
-                                </div>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Email</TableHead>
-                                            <TableHead>Phone</TableHead>
-                                            <TableHead>Message</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead>Date</TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        {leads.length === 0 ? (
-                                            <TableRow>
-                                                <TableCell colSpan={6} className="text-center text-muted-foreground">
-                                                    No leads found
-                                                </TableCell>
-                                            </TableRow>
-                                        ) : (
-                                            leads.map((lead) => (
-                                                <TableRow key={lead._id}>
-                                                    <TableCell className="font-medium">{lead.name}</TableCell>
-                                                    <TableCell>{lead.email}</TableCell>
-                                                    <TableCell>{lead.phone || 'N/A'}</TableCell>
-                                                    <TableCell className="max-w-xs truncate">{lead.message}</TableCell>
-                                                    <TableCell>
-                                                        <Select
-                                                            value={lead.status}
-                                                            onValueChange={(value) => handleStatusChange(lead._id, value)}
-                                                        >
-                                                            <SelectTrigger className="w-32">
-                                                                <SelectValue />
-                                                            </SelectTrigger>
-                                                            <SelectContent>
-                                                                <SelectItem value="new">New</SelectItem>
-                                                                <SelectItem value="contacted">Contacted</SelectItem>
-                                                                <SelectItem value="converted">Converted</SelectItem>
-                                                                <SelectItem value="closed">Closed</SelectItem>
-                                                            </SelectContent>
-                                                        </Select>
-                                                    </TableCell>
-                                                    <TableCell>
-                                                        {new Date(lead.createdAt).toLocaleDateString()}
-                                                    </TableCell>
-                                                </TableRow>
-                                            ))
-                                        )}
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
+                        <Card className="!border-border/50">
+                            <div className="p-4">
+                                <DataTable value={leads} paginator rows={10} className="p-datatable-sm" emptyMessage="No leads found">
+                                    <Column field="name" header="Name" />
+                                    <Column field="email" header="Email" />
+                                    <Column field="phone" header="Phone" body={(row: LeadResponse) => row.phone || 'N/A'} />
+                                    <Column field="message" header="Message" body={(row: LeadResponse) => <span className="max-w-xs truncate block">{row.message}</span>} />
+                                    <Column header="Status" body={statusBodyTemplate} />
+                                    <Column header="Date" body={dateBodyTemplate} />
+                                </DataTable>
+                            </div>
                         </Card>
                     </div>
                 </main>

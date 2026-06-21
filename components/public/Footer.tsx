@@ -15,8 +15,8 @@ import {
     CheckCircle2,
     Youtube,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Button } from 'primereact/button';
+import { InputText } from 'primereact/inputtext';
 
 export default function Footer() {
     const [email, setEmail] = useState('');
@@ -63,7 +63,7 @@ export default function Footer() {
                                     key={social.label}
                                     href={social.href}
                                     aria-label={social.label}
-                                    className="p-2 rounded-lg bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-110"
+                                    className="p-2 rounded-lg bg-muted/50 text-muted-foreground hover:bg-primary/10 hover:text-primary transition-all duration-300 hover:scale-110 cursor-pointer"
                                 >
                                     <social.icon className="h-4 w-4" />
                                 </a>
@@ -164,7 +164,7 @@ export default function Footer() {
                                 </div>
                             ) : (
                                 <form onSubmit={handleSubscribe} className="flex gap-2">
-                                    <Input
+                                    <InputText
                                         type="email"
                                         placeholder="Your email"
                                         value={email}
@@ -174,11 +174,9 @@ export default function Footer() {
                                     />
                                     <Button
                                         type="submit"
-                                        size="sm"
-                                        className="h-9 bg-gradient-to-r from-red-500 to-orange-500 hover:from-red-600 hover:to-orange-600 text-white"
-                                    >
-                                        <ArrowRight className="h-4 w-4" />
-                                    </Button>
+                                        className="h-9 bg-gradient-to-r from-red-500 to-orange-500 border-red-500 text-white"
+                                        icon="pi pi-arrow-right"
+                                    />
                                 </form>
                             )}
                         </div>
@@ -192,10 +190,10 @@ export default function Footer() {
                             &copy; {new Date().getFullYear()} As FitnessZone. All rights reserved.
                         </p>
                         <div className="flex gap-6 text-sm text-muted-foreground">
-                            <Link href="/privacy" className="hover:text-primary transition-colors">
+                            <Link href="/privacy" className="hover:text-primary transition-colors cursor-pointer">
                                 Privacy Policy
                             </Link>
-                            <Link href="/terms" className="hover:text-primary transition-colors">
+                            <Link href="/terms" className="hover:text-primary transition-colors cursor-pointer">
                                 Terms of Service
                             </Link>
                         </div>

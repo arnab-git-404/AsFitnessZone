@@ -1,26 +1,33 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Card } from 'primereact/card';
+import { Button } from 'primereact/button';
+import { Tag } from 'primereact/tag';
+import { Dropdown } from 'primereact/dropdown';
+import { Dialog } from 'primereact/dialog';
+import { Toast } from 'primereact/toast';
 import { Dumbbell, Award, IndianRupee, Calendar, UserCheck, X, Check, Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
-import type { TrainerResponse, TrainerAssignmentResponse } from '@/lib/types';
+import type { TrainerResponse } from '@/lib/types';
 
 const feeTypeLabels: Record<string, string> = {
     monthly: 'Monthly',
     quarterly: 'Quarterly',
     sixMonths: '6 Months',
     annual: 'Annual',
-    
 };
+
+const feeTypeOptions = [
+    { label: 'Monthly', value: 'monthly' },
+    { label: 'Quarterly', value: 'quarterly' },
+    { label: '6 Months', value: 'sixMonths' },
+    { label: 'Annual', value: 'annual' },
+];
 
 export default function UserTrainerPage() {
     const router = useRouter();
+    const toastRef = useRef<Toast>(null);
     const [assignment, setAssignment] = useState<any>(null);
     const [trainers, setTrainers] = useState<TrainerResponse[]>([]);
     const [isLoading, setIsLoading] = useState(true);
@@ -30,7 +37,6 @@ export default function UserTrainerPage() {
     const [isAssigning, setIsAssigning] = useState(false);
     const [isCancelling, setIsCancelling] = useState(false);
 
-    
     const fetchData = async () => {
         try {
             const [assignmentRes, trainersRes] = await Promise.all([
@@ -47,7 +53,7 @@ export default function UserTrainerPage() {
                 setTrainers(data.trainers);
             }
         } catch {
-            toast.error('Failed to load data');
+            toastRef.current?.show({ severity: 'error', summary: 'Failed to load data' });
         } finally {
             setIsLoading(false);
         }
@@ -59,7 +65,7 @@ export default function UserTrainerPage() {
 
     const handleAssign = async () => {
         if (!selectedTrainer) {
-            toast.error('Please select a trainer');
+            toastRef.current?.show({ severity: 'error', summary: 'Please select a trainer' });
             return;
         }
         setIsAssigning(true);
@@ -71,14 +77,14 @@ export default function UserTrainerPage() {
             });
             const data = await response.json();
             if (response.ok) {
-                toast.success('Trainer assigned successfully!');
+                toastRef.current?.show({ severity: 'success', summary: 'Trainer assigned successfully!' });
                 setShowSelector(false);
                 setAssignment(data.assignment);
             } else {
-                toast.error(data.error || 'Failed to assign');
+                toastRef.current?.show({ severity: 'error', summary: data.error || 'Failed to assign' });
             }
         } catch {
-            toast.error('Something went wrong');
+            toastRef.current?.show({ severity: 'error', summary: 'Something went wrong' });
         } finally {
             setIsAssigning(false);
         }
@@ -93,18 +99,31 @@ export default function UserTrainerPage() {
                 headers: { 'Content-Type': 'application/json' },
             });
             if (response.ok) {
-                toast.success('Trainer assignment cancelled');
+                toastRef.current?.show({ severity: 'success', summary: 'Trainer assignment cancelled' });
                 setAssignment(null);
             } else {
                 const data = await response.json();
-                toast.error(data.error || 'Failed to cancel');
+                toastRef.current?.show({ severity: 'error', summary: data.error || 'Failed to cancel' });
             }
         } catch {
-            toast.error('Something went wrong');
+            toastRef.current?.show({ severity: 'error', summary: 'Something went wrong' });
         } finally {
             setIsCancelling(false);
         }
     };
+
+    const filteredFeeOptions = feeTypeOptions.map(ft => {
+        const trainer = trainers.find(t => t._id === selectedTrainer);
+        const price = trainer?.pricing?.[ft.value as keyof typeof trainer.pricing];
+        return { ...ft, disabled: !price || price <= 0 };
+    });
+
+    const dialogFooter = (
+        <div className="flex justify-end gap-3">
+            <Button className="p-button-outlined" label="Cancel" onClick={() => setShowSelector(false)} />
+            <Button className="bg-primary border-primary text-white" label={isAssigning ? 'Assigning...' : 'Confirm'} onClick={handleAssign} disabled={isAssigning || !selectedTrainer} />
+        </div>
+    );
 
     if (isLoading) {
         return (
@@ -119,6 +138,7 @@ export default function UserTrainerPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+            <Toast ref={toastRef} />
             <div className="container mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto space-y-8">
                     {/* Header */}
@@ -129,24 +149,24 @@ export default function UserTrainerPage() {
 
                     {assignment && assignment.trainerId ? (
                         /* Active Assignment Card */
-                        <Card className="border-primary/30">
-                            <CardHeader className="bg-primary/5 border-b border-primary/10">
+                        <Card className="!border-primary/30">
+                            <div className="bg-primary/5 border-b border-primary/10 p-6">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
                                             <UserCheck className="h-6 w-6 text-primary" />
                                         </div>
                                         <div>
-                                            <CardTitle className="text-xl">Your Trainer</CardTitle>
+                                            <h2 className="text-xl font-semibold">Your Trainer</h2>
                                             <p className="text-sm text-muted-foreground">Active assignment</p>
                                         </div>
                                     </div>
-                                    <Badge className="bg-green-500/10 text-green-600 border-green-500/30">
+                                    <Tag severity="success" className="flex items-center gap-1">
                                         <Check className="h-3 w-3 mr-1" />Active
-                                    </Badge>
+                                    </Tag>
                                 </div>
-                            </CardHeader>
-                            <CardContent className="p-6 space-y-6">
+                            </div>
+                            <div className="p-6 space-y-6">
                                 <div className="flex items-start gap-6">
                                     <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center flex-shrink-0">
                                         <Award className="h-10 w-10 text-primary" />
@@ -160,7 +180,7 @@ export default function UserTrainerPage() {
                                         {assignment.trainerId.specializations?.length > 0 && (
                                             <div className="flex flex-wrap gap-1.5 pt-1">
                                                 {assignment.trainerId.specializations.map((s: string, i: number) => (
-                                                    <Badge key={i} variant="secondary" className="text-xs">{s}</Badge>
+                                                    <Tag key={i} value={s} severity="secondary" className="text-xs" />
                                                 ))}
                                             </div>
                                         )}
@@ -187,21 +207,21 @@ export default function UserTrainerPage() {
                                 </div>
 
                                 <div className="flex gap-3 pt-2">
-                                    <Button variant="outline" onClick={() => setShowSelector(true)}>
+                                    <Button className="p-button-outlined" onClick={() => setShowSelector(true)}>
                                         Change Trainer
                                     </Button>
-                                    <Button variant="outline" className="text-destructive border-destructive/30 hover:bg-destructive/10" onClick={handleCancel} disabled={isCancelling}>
+                                    <Button className="p-button-outlined text-destructive !border-destructive/30 hover:!bg-destructive/10" onClick={handleCancel} disabled={isCancelling}>
                                         {isCancelling ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <X className="h-4 w-4 mr-2" />}
                                         Cancel Assignment
                                     </Button>
                                 </div>
-                            </CardContent>
+                            </div>
                         </Card>
                     ) : (
                         /* No Assignment - Show Trainer Options */
                         <div className="space-y-6">
-                            <Card>
-                                <CardContent className="p-12 text-center">
+                            <Card className="!border-border/50">
+                                <div className="p-12 text-center">
                                     <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
                                         <UserCheck className="h-8 w-8 text-primary" />
                                     </div>
@@ -209,10 +229,10 @@ export default function UserTrainerPage() {
                                     <p className="text-muted-foreground mb-6 max-w-md mx-auto">
                                         Select a personal trainer to get one-on-one guidance tailored to your fitness goals.
                                     </p>
-                                    <Button className="bg-primary hover:bg-primary/90" onClick={() => setShowSelector(true)}>
+                                    <Button className="bg-primary border-primary text-white" onClick={() => setShowSelector(true)}>
                                         Choose a Trainer
                                     </Button>
-                                </CardContent>
+                                </div>
                             </Card>
 
                             {/* Available Trainers Preview */}
@@ -220,11 +240,11 @@ export default function UserTrainerPage() {
                                 <h2 className="text-xl font-semibold mb-4">Available Trainers</h2>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {trainers.slice(0, 4).map((trainer) => (
-                                        <Card key={trainer._id} className="hover:border-primary/50 transition-all cursor-pointer" onClick={() => {
+                                        <Card key={trainer._id} className="!border-border/50 hover:!border-primary/50 transition-all cursor-pointer" onClick={() => {
                                             setSelectedTrainer(trainer._id);
                                             setShowSelector(true);
                                         }}>
-                                            <CardContent className="p-4 flex items-start gap-4">
+                                            <div className="p-4 flex items-start gap-4">
                                                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                                                     <Award className="h-6 w-6 text-primary" />
                                                 </div>
@@ -237,7 +257,7 @@ export default function UserTrainerPage() {
                                                         </p>
                                                     )}
                                                 </div>
-                                            </CardContent>
+                                            </div>
                                         </Card>
                                     ))}
                                 </div>
@@ -251,73 +271,50 @@ export default function UserTrainerPage() {
                     )}
 
                     {/* Trainer Selector Dialog */}
-                    <Dialog open={showSelector} onOpenChange={setShowSelector}>
-                        <DialogContent className="sm:max-w-lg">
-                            <DialogHeader>
-                                <DialogTitle>Select a Trainer</DialogTitle>
-                            </DialogHeader>
-                            <div className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium">Choose Trainer</label>
-                                    <div className="max-h-60 overflow-y-auto space-y-2">
-                                        {trainers.map((trainer) => (
-                                            <div
-                                                key={trainer._id}
-                                                className={`p-3 rounded-lg border cursor-pointer transition-all ${
-                                                    selectedTrainer === trainer._id
-                                                        ? 'border-primary bg-primary/5'
-                                                        : 'border-border hover:border-primary/50'
-                                                }`}
-                                                onClick={() => setSelectedTrainer(trainer._id)}
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <div className="font-medium">{trainer.name}</div>
-                                                        <div className="text-xs text-muted-foreground">{trainer.bio.slice(0, 80)}...</div>
-                                                    </div>
-                                                    {selectedTrainer === trainer._id && (
-                                                        <Check className="h-5 w-5 text-primary flex-shrink-0" />
-                                                    )}
+                    <Dialog header="Select a Trainer" visible={showSelector} onHide={() => setShowSelector(false)} footer={dialogFooter} className="sm:max-w-lg">
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <span className="text-sm font-medium">Choose Trainer</span>
+                                <div className="max-h-60 overflow-y-auto space-y-2">
+                                    {trainers.map((trainer) => (
+                                        <div
+                                            key={trainer._id}
+                                            className={`p-3 rounded-lg border cursor-pointer transition-all ${
+                                                selectedTrainer === trainer._id
+                                                    ? 'border-primary bg-primary/5'
+                                                    : 'border-border hover:border-primary/50'
+                                            }`}
+                                            onClick={() => setSelectedTrainer(trainer._id)}
+                                        >
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <div className="font-medium">{trainer.name}</div>
+                                                    <div className="text-xs text-muted-foreground">{trainer.bio.slice(0, 80)}...</div>
                                                 </div>
+                                                {selectedTrainer === trainer._id && (
+                                                    <Check className="h-5 w-5 text-primary flex-shrink-0" />
+                                                )}
                                             </div>
-                                        ))}
-                                        {trainers.length === 0 && (
-                                            <p className="text-sm text-muted-foreground text-center py-4">No trainers available</p>
-                                        )}
-                                    </div>
-                                </div>
-
-                                {selectedTrainer && (
-                                    <div className="space-y-2">
-                                        <label className="text-sm font-medium">Fee Plan</label>
-                                        <Select value={selectedFeeType} onValueChange={setSelectedFeeType}>
-                                            <SelectTrigger>
-                                                <SelectValue placeholder="Select fee type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {(['monthly', 'quarterly', 'sixMonths', 'annual'] as const).map((ft) => {
-                                                    const trainer = trainers.find(t => t._id === selectedTrainer);
-                                                    const price = trainer?.pricing?.[ft];
-                                                    return (
-                                                        <SelectItem key={ft} value={ft} disabled={!price || price <= 0}>
-                                                            {feeTypeLabels[ft]} {price ? `— ₹${price}` : '— N/A'}
-                                                        </SelectItem>
-                                                    );
-                                                })}
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                )}
-
-                                <div className="flex justify-end gap-3 pt-2">
-                                    <Button variant="outline" onClick={() => setShowSelector(false)}>Cancel</Button>
-                                    <Button className="bg-primary hover:bg-primary/90" onClick={handleAssign} disabled={isAssigning || !selectedTrainer}>
-                                        {isAssigning ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-                                        {isAssigning ? 'Assigning...' : 'Confirm'}
-                                    </Button>
+                                        </div>
+                                    ))}
+                                    {trainers.length === 0 && (
+                                        <p className="text-sm text-muted-foreground text-center py-4">No trainers available</p>
+                                    )}
                                 </div>
                             </div>
-                        </DialogContent>
+
+                            {selectedTrainer && (
+                                <div className="space-y-2">
+                                    <span className="text-sm font-medium">Fee Plan</span>
+                                    <Dropdown
+                                        value={selectedFeeType}
+                                        options={filteredFeeOptions}
+                                        onChange={e => setSelectedFeeType(e.value)}
+                                        className="w-full"
+                                    />
+                                </div>
+                            )}
+                        </div>
                     </Dialog>
                 </div>
             </div>
