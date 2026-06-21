@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import User from '@/lib/db/models/user.model';
+import Customer from '@/lib/db/models/customer.model';
 import { getUserFromRequest, isAdmin } from '@/lib/auth/auth';
 
 export async function GET(request: NextRequest) {
@@ -16,10 +17,24 @@ export async function GET(request: NextRequest) {
 
         await connectDB();
 
-        const users = await User.find().select('-password').sort({ createdAt: -1 });
+        const users = await User.find()
+            .select('-password')
+            .populate('role', 'name')
+            .sort({ createdAt: -1 })
+            .lean();
 
-        return NextResponse.json({ users }, { status: 200 });
-    } catch (error: any) {
+        // Join customer data for each user
+        const userIds = users.map(u => u._id);
+        const customers = await Customer.find({ userId: { $in: userIds } }).lean();
+        const customerMap = new Map(customers.map(c => [c.userId.toString(), c]));
+
+        const usersWithProfiles = users.map(u => ({
+            ...u,
+            customer: customerMap.get(u._id.toString()) || null,
+        }));
+
+        return NextResponse.json({ users: usersWithProfiles }, { status: 200 });
+    } catch (error) {
         console.error('Get users error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

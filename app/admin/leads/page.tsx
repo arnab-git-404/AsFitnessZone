@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dumbbell, MessageSquare, LogOut, LayoutDashboard, Users } from 'lucide-react';
+import { Dumbbell, MessageSquare, LogOut, LayoutDashboard, Users, CalendarCheck, Image as ImageIcon, UserCog, UserPlus, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import type { UserResponse, LeadResponse } from '@/lib/types';
 
@@ -28,7 +28,7 @@ export default function AdminLeads() {
             const response = await fetch('/api/auth/me');
             if (response.ok) {
                 const data = await response.json();
-                if (data.user.role !== 'admin') {
+                if (data.user.userType !== 'admin') {
                     router.push('/user/dashboard');
                     return;
                 }
@@ -124,7 +124,7 @@ export default function AdminLeads() {
                         </span>
                     </Link>
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm text-muted-foreground">Admin: {user?.name}</span>
+                        <span className="text-sm text-muted-foreground">Admin: {user?.customer?.name || user?.email}</span>
                         <Button variant="ghost" onClick={handleLogout}>
                             <LogOut className="h-4 w-4 mr-2" />
                             Logout
@@ -153,6 +153,42 @@ export default function AdminLeads() {
                             <Button variant="default" className="w-full justify-start bg-primary">
                                 <MessageSquare className="h-4 w-4 mr-2" />
                                 Leads
+                            </Button>
+                        </Link>
+                        <Link href="/admin/programs">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <Dumbbell className="h-4 w-4 mr-2" />
+                                Programs
+                            </Button>
+                        </Link>
+                        <Link href="/admin/trainers">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <UserCog className="h-4 w-4 mr-2" />
+                                Trainers
+                            </Button>
+                        </Link>
+                        <Link href="/admin/trainer-assignments">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Trainer Assign
+                            </Button>
+                        </Link>
+                        <Link href="/admin/gallery">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <ImageIcon className="h-4 w-4 mr-2" />
+                                Gallery
+                            </Button>
+                        </Link>
+                        <Link href="/admin/activity-logs">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <Activity className="h-4 w-4 mr-2" />
+                                Activity Logs
+                            </Button>
+                        </Link>
+                        <Link href="/admin/attendance">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <CalendarCheck className="h-4 w-4 mr-2" />
+                                Attendance
                             </Button>
                         </Link>
                     </nav>

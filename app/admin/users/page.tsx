@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Dumbbell, Users, LogOut, LayoutDashboard, Search, UserPlus } from 'lucide-react';
+import { Dumbbell, Users, LogOut, LayoutDashboard, Search, UserPlus, CalendarCheck, MessageSquare, Image as ImageIcon, UserCog, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import type { UserResponse } from '@/lib/types';
 
@@ -29,7 +29,7 @@ export default function AdminUsers() {
             const response = await fetch('/api/auth/me');
             if (response.ok) {
                 const data = await response.json();
-                if (data.user.role !== 'admin') {
+                if (data.user.userType !== 'admin') {
                     router.push('/user/dashboard');
                     return;
                 }
@@ -67,7 +67,7 @@ export default function AdminUsers() {
     };
 
     const filteredUsers = users.filter(u =>
-        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (u.customer?.name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         u.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
@@ -96,7 +96,7 @@ export default function AdminUsers() {
                         </span>
                     </Link>
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm text-muted-foreground">Admin: {user?.name}</span>
+                        <span className="text-sm text-muted-foreground">Admin: {user?.customer?.name || user?.email}</span>
                         <Button variant="ghost" onClick={handleLogout}>
                             <LogOut className="h-4 w-4 mr-2" />
                             Logout
@@ -119,6 +119,48 @@ export default function AdminUsers() {
                             <Button variant="default" className="w-full justify-start bg-primary">
                                 <Users className="h-4 w-4 mr-2" />
                                 Users
+                            </Button>
+                        </Link>
+                        <Link href="/admin/leads">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <MessageSquare className="h-4 w-4 mr-2" />
+                                Leads
+                            </Button>
+                        </Link>
+                        <Link href="/admin/programs">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <Dumbbell className="h-4 w-4 mr-2" />
+                                Programs
+                            </Button>
+                        </Link>
+                        <Link href="/admin/trainers">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <UserCog className="h-4 w-4 mr-2" />
+                                Trainers
+                            </Button>
+                        </Link>
+                        <Link href="/admin/trainer-assignments">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Trainer Assign
+                            </Button>
+                        </Link>
+                        <Link href="/admin/gallery">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <ImageIcon className="h-4 w-4 mr-2" />
+                                Gallery
+                            </Button>
+                        </Link>
+                        <Link href="/admin/activity-logs">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <Activity className="h-4 w-4 mr-2" />
+                                Activity Logs
+                            </Button>
+                        </Link>
+                        <Link href="/admin/attendance">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <CalendarCheck className="h-4 w-4 mr-2" />
+                                Attendance
                             </Button>
                         </Link>
                     </nav>
@@ -164,7 +206,7 @@ export default function AdminUsers() {
                                             <TableHead>Email</TableHead>
                                             <TableHead>Phone</TableHead>
                                             <TableHead>Fitness Goal</TableHead>
-                                            <TableHead>Role</TableHead>
+                                            <TableHead>User Type</TableHead>
                                             <TableHead>Joined</TableHead>
                                         </TableRow>
                                     </TableHeader>
@@ -178,21 +220,21 @@ export default function AdminUsers() {
                                         ) : (
                                             filteredUsers.map((u) => (
                                                 <TableRow key={u._id}>
-                                                    <TableCell className="font-medium">{u.name}</TableCell>
+                                                    <TableCell className="font-medium">{u.customer?.name || 'N/A'}</TableCell>
                                                     <TableCell>{u.email}</TableCell>
-                                                    <TableCell>{u.phone || 'N/A'}</TableCell>
+                                                    <TableCell>{u.customer?.phone || 'N/A'}</TableCell>
                                                     <TableCell>
-                                                        {u.fitnessGoal ? (
+                                                        {u.customer?.fitnessGoal ? (
                                                             <Badge variant="secondary" className="capitalize">
-                                                                {u.fitnessGoal.replace('-', ' ')}
+                                                                {u.customer.fitnessGoal.replace('-', ' ')}
                                                             </Badge>
                                                         ) : (
                                                             'Not set'
                                                         )}
                                                     </TableCell>
                                                     <TableCell>
-                                                        <Badge variant={u.role === 'admin' ? 'default' : 'outline'}>
-                                                            {u.role}
+                                                        <Badge variant={u.userType === 'admin' ? 'default' : u.userType === 'trainer' ? 'secondary' : 'outline'}>
+                                                            {u.userType === 'gymMember' ? 'Member' : u.userType === 'trainer' ? 'Trainer' : 'Admin'}
                                                         </Badge>
                                                     </TableCell>
                                                     <TableCell>

@@ -34,9 +34,11 @@ export default function LoginPage() {
             if (response.ok) {
                 toast.success('Login successful!');
                 
-                // Redirect based on role
-                if (data.user.role === 'admin') {
+                // Redirect based on user type
+                if (data.user.userType === 'admin') {
                     router.push('/admin/dashboard');
+                } else if (data.user.userType === 'trainer') {
+                    router.push('/trainer/dashboard');
                 } else {
                     router.push('/user/dashboard');
                 }
@@ -84,7 +86,12 @@ export default function LoginPage() {
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="password">Password</Label>
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="password">Password</Label>
+                                <Link href="/forgot-password" className="text-xs text-primary hover:underline">
+                                    Forgot password?
+                                </Link>
+                            </div>
                             <Input
                                 id="password"
                                 name="password"

@@ -13,8 +13,7 @@ export default function Navbar() {
   const navLinks = [
     { href: "/", label: "Home" },
     { href: "/about", label: "About" },
-    // { href: '/programs', label: 'Programs' },
-    // { href: '/trainers', label: 'Trainers' },
+    { href: "/bmi-calculator", label: "BMI Calculator" },
     { href: "/gallery", label: "Gallery" },
     { href: "/membership", label: "Membership" },
     { href: "/contact", label: "Contact" },

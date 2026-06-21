@@ -1,76 +1,36 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Award } from 'lucide-react';
-
-export const metadata = {
-  title: "Certified Gym Trainers in Bolpur",
-  description:
-    "Meet certified fitness trainers at As FitnessZone, a leading unisex gym in Bolpur.",
-}
+import { Button } from '@/components/ui/button';
+import { Award, IndianRupee, Check } from 'lucide-react';
+import Link from 'next/link';
+import type { TrainerResponse } from '@/lib/types';
 
 export default function TrainersPage() {
-    const trainers = [
-        {
-            name: 'John Martinez',
-            title: 'Head Trainer & Strength Coach',
-            image: '/trainers/trainer1.jpg',
-            certifications: ['NASM-CPT', 'CSCS', 'Nutrition Specialist'],
-            experience: '12 years',
-            specializations: ['Strength Training', 'Powerlifting', 'Sports Performance'],
-            bio: 'John has transformed hundreds of clients with his evidence-based approach to strength training and nutrition.',
-        },
-        {
-            name: 'Sarah Williams',
-            title: 'Yoga & Wellness Coach',
-            image: '/trainers/trainer2.jpg',
-            certifications: ['RYT-500', 'Wellness Coach', 'Meditation Instructor'],
-            experience: '8 years',
-            specializations: ['Yoga', 'Flexibility', 'Mindfulness', 'Recovery'],
-            bio: 'Sarah brings a holistic approach to fitness, focusing on mind-body connection and sustainable wellness.',
-        },
-        {
-            name: 'Mike Thompson',
-            title: 'CrossFit & HIIT Specialist',
-            image: '/trainers/trainer3.jpg',
-            certifications: ['CrossFit L2', 'HIIT Certified', 'Olympic Lifting'],
-            experience: '10 years',
-            specializations: ['CrossFit', 'HIIT', 'Functional Fitness', 'Olympic Lifts'],
-            bio: 'Mike\'s high-energy training style pushes athletes to reach their peak performance and beyond.',
-        },
-        {
-            name: 'Emily Chen',
-            title: 'Weight Loss & Nutrition Expert',
-            image: '/trainers/trainer4.jpg',
-            certifications: ['ACE-CPT', 'Precision Nutrition L2', 'Behavioral Change Specialist'],
-            experience: '9 years',
-            specializations: ['Fat Loss', 'Nutrition Coaching', 'Lifestyle Change'],
-            bio: 'Emily specializes in sustainable weight loss through personalized nutrition and training programs.',
-        },
-        {
-            name: 'David Rodriguez',
-            title: 'Bodybuilding & Hypertrophy Coach',
-            image: '/trainers/trainer5.jpg',
-            certifications: ['IFBB Pro Coach', 'Sports Nutrition', 'Biomechanics'],
-            experience: '15 years',
-            specializations: ['Bodybuilding', 'Muscle Gain', 'Contest Prep'],
-            bio: 'David has coached numerous competitive bodybuilders and helps clients achieve their muscle-building goals.',
-        },
-        {
-            name: 'Lisa Anderson',
-            title: 'Senior Fitness & Rehabilitation',
-            image: '/trainers/trainer6.jpg',
-            certifications: ['ACSM-CPT', 'Corrective Exercise', 'Senior Fitness'],
-            experience: '11 years',
-            specializations: ['Senior Fitness', 'Injury Prevention', 'Corrective Exercise'],
-            bio: 'Lisa specializes in safe, effective training for older adults and post-rehabilitation clients.',
-        },
-    ];
+    const [trainers, setTrainers] = useState<TrainerResponse[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [isError, setIsError] = useState(false);
+
+    useEffect(() => {
+        let mounted = true;
+        fetch('/api/trainers')
+            .then(r => { if (!r.ok) throw new Error('Failed to fetch'); return r.json(); })
+            .then(data => { if (mounted) setTrainers(data.trainers || []); })
+            .catch(() => { if (mounted) setIsError(true); })
+            .finally(() => { if (mounted) setIsLoading(false); });
+        return () => { mounted = false; };
+    }, []);
+
+    // Set page title for SEO since this is a client component
+    useEffect(() => {
+        document.title = 'Certified Gym Trainers in Bolpur | As FitnessZone';
+    }, []);
 
     return (
         <div className="min-h-screen flex flex-col">
-
             <main className="flex-1">
-                {/* Hero Section */}
                 <section className="py-20 bg-gradient-to-br from-background via-background to-primary/10">
                     <div className="container mx-auto px-4">
                         <div className="max-w-3xl mx-auto text-center space-y-6">
@@ -84,61 +44,118 @@ export default function TrainersPage() {
                     </div>
                 </section>
 
-                {/* Trainers Grid */}
                 <section className="py-20">
                     <div className="container mx-auto px-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                            {trainers.map((trainer, index) => (
-                                <Card key={index} className="group hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 overflow-hidden">
-                                    <div className="aspect-square bg-gradient-to-br from-primary/20 to-primary/5 relative overflow-hidden">
-                                        <div className="absolute inset-0 flex items-center justify-center">
-                                            <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center">
-                                                <Award className="h-16 w-16 text-primary" />
+                        {isLoading ? (
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                                {[1, 2, 3].map(i => (
+                                    <Card key={i}>
+                                        <div className="aspect-square bg-muted animate-pulse" />
+                                        <CardContent className="p-6 space-y-4">
+                                            <div className="h-6 bg-muted animate-pulse rounded w-3/4" />
+                                            <div className="h-4 bg-muted animate-pulse rounded w-1/2" />
+                                            <div className="h-12 bg-muted animate-pulse rounded w-full" />
+                                        </CardContent>
+                                    </Card>
+                                ))}
+                            </div>                            ) : isError ? (
+                                <div className="text-center py-20 text-muted-foreground">
+                                    <p className="text-lg">Unable to load trainers. Please try again later.</p>
+                                </div>
+                            ) : trainers.length === 0 ? (
+                                <div className="text-center py-20 text-muted-foreground">
+                                    <p className="text-lg">No trainers available yet. Check back soon!</p>
+                                </div>
+                        ) : (            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {trainers.map((trainer) => (
+                    <Card key={trainer._id} className="group hover:border-primary/50 transition-all hover:shadow-lg hover:shadow-primary/10 overflow-hidden">
+                        <div className="aspect-square bg-gradient-to-br from-primary/20 to-primary/5 relative overflow-hidden">
+                            <div className="absolute inset-0 flex items-center justify-center">
+                                <div className="w-32 h-32 rounded-full bg-primary/10 flex items-center justify-center">
+                                    <Award className="h-16 w-16 text-primary" />
+                                </div>
+                            </div>
+                        </div>
+                        <CardContent className="p-6 space-y-4">
+                            <div>
+                                <h3 className="text-xl font-semibold">{trainer.name}</h3>
+                                <p className="text-sm text-primary">Trainer</p>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{trainer.bio}</p>
+
+                            {/* Pricing Section */}
+                            {trainer.pricing && Object.values(trainer.pricing).some(v => v > 0) && (
+                                <div className="bg-primary/5 rounded-lg p-3 space-y-2">
+                                    <div className="flex items-center gap-1.5 text-sm font-semibold text-primary">
+                                        <IndianRupee className="h-4 w-4" />
+                                        Training Fees
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {trainer.pricing.monthly > 0 && (
+                                            <div className="flex items-center justify-between text-xs bg-background rounded px-2 py-1.5">
+                                                <span className="text-muted-foreground">Monthly</span>
+                                                <span className="font-semibold">₹{trainer.pricing.monthly}</span>
                                             </div>
+                                        )}
+                                        {trainer.pricing.quarterly > 0 && (
+                                            <div className="flex items-center justify-between text-xs bg-background rounded px-2 py-1.5">
+                                                <span className="text-muted-foreground">Quarterly</span>
+                                                <span className="font-semibold">₹{trainer.pricing.quarterly}</span>
+                                            </div>
+                                        )}
+                                        {trainer.pricing.sixMonths > 0 && (
+                                            <div className="flex items-center justify-between text-xs bg-background rounded px-2 py-1.5">
+                                                <span className="text-muted-foreground">6 Months</span>
+                                                <span className="font-semibold">₹{trainer.pricing.sixMonths}</span>
+                                            </div>
+                                        )}
+                                        {trainer.pricing.annual > 0 && (
+                                            <div className="flex items-center justify-between text-xs bg-background rounded px-2 py-1.5">
+                                                <span className="text-muted-foreground">Annual</span>
+                                                <span className="font-semibold">₹{trainer.pricing.annual}</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div className="space-y-2">
+                                {trainer.experience && (
+                                    <div className="text-sm font-medium">Experience: {trainer.experience}</div>
+                                )}
+                                {trainer.certifications.length > 0 && (
+                                    <div>
+                                        <div className="text-sm font-medium mb-2">Certifications:</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {trainer.certifications.map((cert, idx) => (
+                                                <Badge key={idx} variant="secondary" className="text-xs">{cert}</Badge>
+                                            ))}
                                         </div>
                                     </div>
-
-                                    <CardContent className="p-6 space-y-4">
-                                        <div>
-                                            <h3 className="text-xl font-semibold">{trainer.name}</h3>
-                                            <p className="text-sm text-primary">{trainer.title}</p>
+                                )}
+                                {trainer.specializations.length > 0 && (
+                                    <div>
+                                        <div className="text-sm font-medium mb-2">Specializations:</div>
+                                        <div className="flex flex-wrap gap-2">
+                                            {trainer.specializations.map((spec, idx) => (
+                                                <Badge key={idx} variant="outline" className="text-xs">{spec}</Badge>
+                                            ))}
                                         </div>
+                                    </div>
+                                )}
+                            </div>
 
-                                        <p className="text-sm text-muted-foreground">{trainer.bio}</p>
-
-                                        <div className="space-y-2">
-                                            <div className="text-sm font-medium">Experience: {trainer.experience}</div>
-
-                                            <div>
-                                                <div className="text-sm font-medium mb-2">Certifications:</div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {trainer.certifications.map((cert, idx) => (
-                                                        <Badge key={idx} variant="secondary" className="text-xs">
-                                                            {cert}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <div className="text-sm font-medium mb-2">Specializations:</div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {trainer.specializations.map((spec, idx) => (
-                                                        <Badge key={idx} variant="outline" className="text-xs">
-                                                            {spec}
-                                                        </Badge>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
+                            <Link href="/signup" className="block">
+                                <Button className="w-full" size="sm">Choose Trainer</Button>
+                            </Link>
+                        </CardContent>
+                    </Card>
+                ))}
+            </div>
+                        )}
                     </div>
                 </section>
             </main>
-
         </div>
     );
 }

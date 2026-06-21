@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import User from '@/lib/db/models/user.model';
+import Customer from '@/lib/db/models/customer.model';
+import Trainer from '@/lib/db/models/trainer.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
 
 export async function GET(request: NextRequest) {
@@ -16,7 +18,9 @@ export async function GET(request: NextRequest) {
 
         await connectDB();
 
-        const user = await User.findById(tokenPayload.userId).select('-password');
+        const user = await User.findById(tokenPayload.userId)
+            .select('-password')
+            .populate('role', 'name');
         if (!user) {
             return NextResponse.json(
                 { error: 'User not found' },
@@ -24,8 +28,21 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({ user }, { status: 200 });
-    } catch (error: any) {
+        const enrichedUser: any = { ...user.toObject(), customer: null, trainer: null };
+
+        if (user.userType === 'trainer') {
+            const trainer = await Trainer.findOne({ userId: user._id });
+            enrichedUser.trainer = trainer ? trainer.toObject() : null;
+        } else {
+            const customer = await Customer.findOne({ userId: user._id });
+            enrichedUser.customer = customer ? customer.toObject() : null;
+        }
+
+        return NextResponse.json(
+            { user: enrichedUser },
+            { status: 200 }
+        );
+    } catch (error) {
         console.error('Get user error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },

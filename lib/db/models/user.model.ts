@@ -2,28 +2,16 @@ import mongoose, { Schema, model, models } from 'mongoose';
 
 export interface IUser {
     _id: string;
-    name: string;
     email: string;
     password: string;
-    phone?: string;
-    age?: number;
-    address?: string;
-    weight?: number;
-    height?: number;
-    fitnessGoal?: string;
-    profileImage?: string;
-    role: 'user' | 'admin';
+    userType: 'gymMember' | 'admin' | 'trainer';
+    role: mongoose.Types.ObjectId;
     createdAt: Date;
     updatedAt: Date;
 }
 
 const UserSchema = new Schema<IUser>(
     {
-        name: {
-            type: String,
-            required: [true, 'Name is required'],
-            trim: true,
-        },
         email: {
             type: String,
             required: [true, 'Email is required'],
@@ -36,40 +24,17 @@ const UserSchema = new Schema<IUser>(
             required: [true, 'Password is required'],
             minlength: [6, 'Password must be at least 6 characters'],
         },
-        phone: {
+        userType: {
             type: String,
-            trim: true,
-        },
-        age: {
-            type: Number,
-            min: [10, 'Age must be at least 10'],
-            max: [100, 'Age must be less than 100'],
-        },
-        address: {
-            type: String,
-            trim: true,
-        },
-        weight: {
-            type: Number,
-            min: [20, 'Weight must be at least 20 kg'],
-        },
-        height: {
-            type: Number,
-            min: [50, 'Height must be at least 50 cm'],
-        },
-        fitnessGoal: {
-            type: String,
-            enum: ['fat-loss', 'muscle-gain', 'general-fitness', 'strength', 'endurance', 'flexibility', ''],
-            default: '',
-        },
-        profileImage: {
-            type: String,
-            default: '',
+            enum: ['gymMember', 'admin', 'trainer'],
+            required: [true, 'User type is required'],
+            default: 'gymMember',
         },
         role: {
-            type: String,
-            enum: ['user', 'admin'],
-            default: 'user',
+            type: Schema.Types.ObjectId,
+            ref: 'Role',
+            required: [true, 'Role is required'],
+            index: true,
         },
     },
     {

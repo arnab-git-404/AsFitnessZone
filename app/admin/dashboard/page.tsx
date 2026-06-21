@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dumbbell, Users, MessageSquare, Image as ImageIcon, LogOut, LayoutDashboard, UserCog } from 'lucide-react';
+import { Dumbbell, Users, MessageSquare, Image as ImageIcon, LogOut, LayoutDashboard, UserCog, CalendarCheck, UserPlus, Activity } from 'lucide-react';
 import { toast } from 'sonner';
 import type { UserResponse, AdminStats } from '@/lib/types';
 
@@ -30,7 +30,7 @@ export default function AdminDashboard() {
             const response = await fetch('/api/auth/me');
             if (response.ok) {
                 const data = await response.json();
-                if (data.user.role !== 'admin') {
+                if (data.user.userType !== 'admin') {
                     router.push('/user/dashboard');
                     return;
                 }
@@ -92,7 +92,7 @@ export default function AdminDashboard() {
                         </span>
                     </Link>
                     <div className="flex items-center space-x-4">
-                        <span className="text-sm text-muted-foreground">Admin: {user?.name}</span>
+                        <span className="text-sm text-muted-foreground">Admin: {user?.customer?.name || user?.email}</span>
                         <Button variant="ghost" onClick={handleLogout}>
                             <LogOut className="h-4 w-4 mr-2" />
                             Logout
@@ -123,6 +123,12 @@ export default function AdminDashboard() {
                                 Leads
                             </Button>
                         </Link>
+                        <Link href="/admin/activity-logs">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <Activity className="h-4 w-4 mr-2" />
+                                Activity Logs
+                            </Button>
+                        </Link>
                         <Link href="/admin/programs">
                             <Button variant="ghost" className="w-full justify-start">
                                 <Dumbbell className="h-4 w-4 mr-2" />
@@ -135,10 +141,22 @@ export default function AdminDashboard() {
                                 Trainers
                             </Button>
                         </Link>
+                        <Link href="/admin/trainer-assignments">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <UserPlus className="h-4 w-4 mr-2" />
+                                Trainer Assign
+                            </Button>
+                        </Link>
                         <Link href="/admin/gallery">
                             <Button variant="ghost" className="w-full justify-start">
                                 <ImageIcon className="h-4 w-4 mr-2" />
                                 Gallery
+                            </Button>
+                        </Link>
+                        <Link href="/admin/attendance">
+                            <Button variant="ghost" className="w-full justify-start">
+                                <CalendarCheck className="h-4 w-4 mr-2" />
+                                Attendance
                             </Button>
                         </Link>
                     </nav>

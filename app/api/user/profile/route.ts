@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import connectDB from '@/lib/db/db';
 import User from '@/lib/db/models/user.model';
+import Customer from '@/lib/db/models/customer.model';
 import { getUserFromRequest } from '@/lib/auth/auth';
 import { updateProfileSchema, getFirstZodError } from '@/lib/validations';
 
@@ -25,8 +26,15 @@ export async function GET(request: NextRequest) {
             );
         }
 
-        return NextResponse.json({ user }, { status: 200 });
-    } catch (error: any) {
+        const customer = await Customer.findOne({ userId: user._id });
+
+        return NextResponse.json({
+            user: {
+                ...user.toObject(),
+                customer: customer ? customer.toObject() : null,
+            },
+        }, { status: 200 });
+    } catch (error) {
         console.error('Get profile error:', error);
         return NextResponse.json(
             { error: 'Internal server error' },
@@ -60,42 +68,43 @@ export async function PUT(request: NextRequest) {
 
         const { name, phone, age, address, weight, height, fitnessGoal, profileImage } = result.data;
 
-        // Update user
-        const user = await User.findByIdAndUpdate(
-            tokenPayload.userId,
+        // Upsert Customer profile
+        const customer = await Customer.findOneAndUpdate(
+            { userId: tokenPayload.userId },
             {
                 $set: {
-                    name,
-                    phone,
-                    age,
-                    address,
-                    weight,
-                    height,
-                    fitnessGoal,
-                    profileImage,
+                    userId: tokenPayload.userId,
+                    ...(name !== undefined && { name }),
+                    ...(phone !== undefined && { phone }),
+                    ...(age !== undefined && { age }),
+                    ...(address !== undefined && { address }),
+                    ...(weight !== undefined && { weight }),
+                    ...(height !== undefined && { height }),
+                    ...(fitnessGoal !== undefined && { fitnessGoal }),
+                    ...(profileImage !== undefined && { profileImage }),
                 },
             },
-            { new: true, runValidators: true }
-        ).select('-password');
+            { upsert: true, new: true, runValidators: true }
+        );
 
-        if (!user) {
+        if (!customer) {
             return NextResponse.json(
-                { error: 'User not found' },
-                { status: 404 }
+                { error: 'Failed to save profile' },
+                { status: 500 }
             );
         }
 
         return NextResponse.json(
             {
                 message: 'Profile updated successfully',
-                user,
+                customer,
             },
             { status: 200 }
         );
-    } catch (error: any) {
+    } catch (error) {
         console.error('Update profile error:', error);
         return NextResponse.json(
-            { error: error.message || 'Internal server error' },
+            { error: 'Internal server error' },
             { status: 500 }
         );
     }

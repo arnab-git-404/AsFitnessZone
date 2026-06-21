@@ -41,16 +41,17 @@ export default function UserProfile() {
             if (response.ok) {
                 const data = await response.json();
                 setUser(data.user);
+                const c = data.user.customer;
                 setFormData({
-                    name: data.user.name || '',
+                    name: c?.name || '',
                     email: data.user.email || '',
-                    phone: data.user.phone || '',
-                    age: data.user.age?.toString() || '',
-                    address: data.user.address || '',
-                    weight: data.user.weight?.toString() || '',
-                    height: data.user.height?.toString() || '',
-                    fitnessGoal: data.user.fitnessGoal || '',
-                    profileImage: data.user.profileImage || '',
+                    phone: c?.phone || '',
+                    age: c?.age?.toString() || '',
+                    address: c?.address || '',
+                    weight: c?.weight?.toString() || '',
+                    height: c?.height?.toString() || '',
+                    fitnessGoal: c?.fitnessGoal || '',
+                    profileImage: c?.profileImage || '',
                 });
             } else {
                 router.push('/login');

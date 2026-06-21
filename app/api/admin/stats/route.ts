@@ -20,10 +20,10 @@ export async function GET(request: NextRequest) {
         await connectDB();
 
         const [totalUsers, totalLeads, totalPrograms, totalTrainers] = await Promise.all([
-            User.countDocuments({ role: 'user' }),
+            User.countDocuments({ userType: 'gymMember' }),
             Lead.countDocuments(),
             Program.countDocuments({ isActive: true }),
-            Trainer.countDocuments({ isActive: true }),
+            User.countDocuments({ userType: 'trainer' }),
         ]);
 
         return NextResponse.json(
